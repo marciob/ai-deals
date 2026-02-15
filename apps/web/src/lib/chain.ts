@@ -20,7 +20,7 @@ export async function isEligible(
   providerAddress: string,
   minStake: bigint
 ): Promise<boolean> {
-  const registryAddress = process.env.STAKE_REGISTRY_ADDRESS;
+  const registryAddress = process.env.STAKE_REGISTRY_ADDRESS?.trim();
   if (!registryAddress || registryAddress === "0x0000000000000000000000000000000000000000") {
     // Contracts not deployed yet — skip on-chain check
     return true;
