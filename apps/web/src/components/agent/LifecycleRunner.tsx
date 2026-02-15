@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { Task, TaskContract } from "@/types/task";
+import type { TaskContract } from "@/types/task";
 import type { Provider } from "@/types/provider";
 import { useTask } from "@/hooks/useTask";
 import { useLifecycleRunner } from "@/hooks/useLifecycleRunner";
@@ -38,7 +38,6 @@ export function LifecycleRunner() {
       dispatch({ type: "ADD_TASK", task });
       setActiveTaskId(task.id);
 
-      // Fetch providers
       const ranked = await getProviders(contract.capability, contract.urgent);
       setProviders(ranked);
 
@@ -65,13 +64,13 @@ export function LifecycleRunner() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left column: Creator / Controls */}
-        <div className="flex flex-col gap-4">
+        {/* Left column */}
+        <div className="flex flex-col gap-5">
           {phase === "create" && (
             <Card>
-              <h3 className="text-sm font-medium text-text-primary mb-3">
+              <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
                 Define Task
               </h3>
               <TaskCreator onCreateTask={handleCreateTask} />
@@ -79,7 +78,7 @@ export function LifecycleRunner() {
           )}
 
           {phase === "providers" && (
-            <>
+            <div className="flex flex-col gap-4 animate-fade-in">
               <ProviderRanking
                 providers={providers}
                 selectedId={selectedProvider?.id}
@@ -87,27 +86,33 @@ export function LifecycleRunner() {
               <Button onClick={handleRunAgent} disabled={!selectedProvider}>
                 Run Agent Lifecycle
               </Button>
-            </>
+            </div>
           )}
 
           {phase === "running" && (
-            <Card>
-              <h3 className="text-sm font-medium text-text-primary mb-3">
+            <Card glow className="animate-pulse-glow">
+              <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
                 Agent Running
               </h3>
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-                  <span className="text-sm text-text-secondary">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="relative h-3 w-3">
+                    <div className="absolute inset-0 rounded-full bg-accent animate-ping opacity-40" />
+                    <div className="relative h-3 w-3 rounded-full bg-accent" />
+                  </div>
+                  <span className="text-sm text-text-primary font-medium">
                     Step {lifecycle.currentStep + 1} of {lifecycle.totalSteps}
-                    {lifecycle.currentAction &&
-                      ` — ${lifecycle.currentAction}`}
                   </span>
+                  {lifecycle.currentAction && (
+                    <span className="text-xs text-text-muted font-mono bg-surface-base/50 px-2 py-0.5 rounded">
+                      {lifecycle.currentAction}
+                    </span>
+                  )}
                 </div>
                 {/* Progress bar */}
-                <div className="h-1.5 w-full rounded-full bg-surface-base overflow-hidden">
+                <div className="h-2 w-full rounded-full bg-surface-base/50 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-accent transition-all duration-500 ease-[var(--ease-snappy)]"
+                    className="h-full rounded-full bg-gradient-to-r from-accent to-[oklch(0.60_0.24_300)] transition-all duration-500 ease-[var(--ease-snappy)]"
                     style={{
                       width: `${((lifecycle.currentStep + 1) / lifecycle.totalSteps) * 100}%`,
                     }}
@@ -117,6 +122,7 @@ export function LifecycleRunner() {
                   variant="ghost"
                   size="sm"
                   onClick={lifecycle.cancel}
+                  className="self-start"
                 >
                   Cancel
                 </Button>
@@ -125,12 +131,12 @@ export function LifecycleRunner() {
           )}
 
           {phase === "complete" && activeTask && (
-            <>
+            <div className="flex flex-col gap-4 animate-fade-in">
               <ReceiptView task={activeTask} provider={selectedProvider} />
               <Button variant="secondary" onClick={handleReset}>
                 Start New Task
               </Button>
-            </>
+            </div>
           )}
 
           {lifecycle.error && (
@@ -142,12 +148,12 @@ export function LifecycleRunner() {
           )}
         </div>
 
-        {/* Right column: Preview + Timeline */}
-        <div className="flex flex-col gap-4">
+        {/* Right column */}
+        <div className="flex flex-col gap-5">
           <TaskContractPreview task={activeTask} />
           {activeTask && activeTask.events.length > 0 && (
             <Card>
-              <h3 className="text-sm font-medium text-text-primary mb-3">
+              <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
                 Event Log
               </h3>
               <EventTimeline events={activeTask.events} />

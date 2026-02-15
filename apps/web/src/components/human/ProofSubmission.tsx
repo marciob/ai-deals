@@ -25,10 +25,10 @@ export function ProofSubmission({ onSubmit }: ProofSubmissionProps) {
 
   return (
     <Card>
-      <h4 className="text-sm font-medium text-text-primary mb-3">
+      <h4 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
         Submit Proof
       </h4>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <Input
           label="Confirmation Code"
           placeholder="e.g., RES-2024-1234"
@@ -42,10 +42,13 @@ export function ProofSubmission({ onSubmit }: ProofSubmissionProps) {
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
         />
-        <div className="flex items-center gap-2">
-          <div className="flex-1 rounded-lg border border-dashed border-border bg-surface-base p-4 text-center">
-            <p className="text-xs text-text-muted">
-              File upload placeholder — drag & drop or click
+        <div className="rounded-xl border border-dashed border-border/60 bg-surface-base/20 p-6 text-center transition-colors hover:border-border-hover/60 hover:bg-surface-base/30 cursor-pointer">
+          <div className="flex flex-col items-center gap-1.5">
+            <div className="h-8 w-8 rounded-lg bg-surface-highlight/30 flex items-center justify-center text-text-muted/40 text-sm">
+              +
+            </div>
+            <p className="text-xs text-text-muted/60">
+              Drag & drop files or click to upload
             </p>
           </div>
         </div>

@@ -22,14 +22,16 @@ export function DecisionPanel({
   loading = false,
 }: DecisionPanelProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-raised p-4">
-      <div>
-        <h4 className="text-sm font-medium text-text-primary">{title}</h4>
+    <div className="glass inner-light rounded-2xl p-5 border-l-2 border-l-accent/50">
+      <div className="mb-3">
+        <h4 className="text-sm font-semibold text-text-primary">{title}</h4>
         {description && (
-          <p className="mt-0.5 text-xs text-text-secondary">{description}</p>
+          <p className="mt-1 text-xs text-text-secondary leading-relaxed">
+            {description}
+          </p>
         )}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <Button size="sm" onClick={onConfirm} disabled={loading}>
           {loading ? "Processing..." : confirmLabel}
         </Button>

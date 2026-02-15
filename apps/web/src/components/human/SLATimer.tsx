@@ -12,16 +12,23 @@ export function SLATimer({ deadline, className = "" }: SLATimerProps) {
   const { remaining, isExpired, isUrgent } = useCountdown(deadline);
 
   return (
-    <span
-      className={`font-mono text-xs ${
+    <div
+      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs ${
         isExpired
-          ? "text-status-timed-out"
+          ? "bg-status-timed-out/10 text-status-timed-out"
           : isUrgent
-            ? "text-status-proof-submitted animate-pulse"
-            : "text-text-secondary"
+            ? "bg-status-proof-submitted/10 text-status-proof-submitted animate-pulse"
+            : "bg-surface-highlight/20 text-text-secondary"
       } ${className}`}
     >
+      <span className={`h-1.5 w-1.5 rounded-full ${
+        isExpired
+          ? "bg-status-timed-out"
+          : isUrgent
+            ? "bg-status-proof-submitted"
+            : "bg-text-muted"
+      }`} />
       {formatTimeRemaining(remaining)}
-    </span>
+    </div>
   );
 }

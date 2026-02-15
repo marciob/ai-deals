@@ -11,8 +11,8 @@ export function IncomingRequests() {
 
   if (requests.length === 0) {
     return (
-      <Card>
-        <p className="text-sm text-text-muted italic">
+      <Card className="flex items-center justify-center min-h-[200px]">
+        <p className="text-sm text-text-muted/60">
           No incoming requests
         </p>
       </Card>
@@ -21,25 +21,25 @@ export function IncomingRequests() {
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-sm font-medium text-text-primary">
+      <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase">
         Incoming Requests
       </h3>
       {requests.map((task) => (
         <Card key={task.id}>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex flex-col gap-1">
-                <p className="text-sm text-text-primary">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <p className="text-sm font-medium text-text-primary leading-snug">
                   {task.contract.goal}
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <StatusBadge status={task.status} />
-                  <span className="text-xs text-text-muted">
+                  <span className="text-[11px] text-text-muted font-mono">
                     {task.contract.capability}
                   </span>
                 </div>
               </div>
-              <span className="text-sm font-medium text-text-secondary">
+              <span className="text-sm font-semibold text-text-primary font-mono flex-shrink-0">
                 {formatCurrency(task.contract.maxBudget, task.contract.currency)}
               </span>
             </div>

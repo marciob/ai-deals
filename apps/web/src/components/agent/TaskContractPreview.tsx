@@ -11,10 +11,15 @@ interface TaskContractPreviewProps {
 export function TaskContractPreview({ task }: TaskContractPreviewProps) {
   if (!task) {
     return (
-      <Card className="min-h-[200px] flex items-center justify-center">
-        <p className="text-sm text-text-muted italic">
-          Create a task to see the contract preview
-        </p>
+      <Card className="min-h-[220px] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-10 w-10 rounded-xl bg-surface-highlight/30 flex items-center justify-center">
+            <span className="text-text-muted/40 font-mono text-lg">{"{ }"}</span>
+          </div>
+          <p className="text-sm text-text-muted/60">
+            Create a task to see the contract preview
+          </p>
+        </div>
       </Card>
     );
   }
@@ -30,13 +35,13 @@ export function TaskContractPreview({ task }: TaskContractPreviewProps) {
 
   return (
     <Card>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-text-primary">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase">
           Task Contract
         </h3>
         <StatusBadge status={task.status} />
       </div>
-      <pre className="overflow-auto rounded-lg bg-surface-base p-3 text-xs font-mono text-text-secondary leading-relaxed">
+      <pre className="overflow-auto rounded-xl bg-surface-base/50 border border-border/50 p-4 text-xs font-mono text-text-secondary leading-relaxed">
         {JSON.stringify(preview, null, 2)}
       </pre>
     </Card>

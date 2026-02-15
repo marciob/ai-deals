@@ -8,10 +8,10 @@ interface TxHashChipProps {
 export function TxHashChip({ hash, className = "" }: TxHashChipProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-md bg-surface-overlay px-2 py-0.5 font-mono text-xs text-text-muted ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg bg-surface-highlight/40 px-2.5 py-1 font-mono text-[11px] text-text-muted transition-colors hover:text-text-secondary ${className}`}
       title={hash}
     >
-      <span className="text-accent/60">tx</span>
+      <span className="text-accent/70 font-semibold">tx</span>
       {truncateAddress(hash, 6)}
     </span>
   );

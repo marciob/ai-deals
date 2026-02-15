@@ -13,8 +13,8 @@ export function ProviderRanking({ providers, selectedId }: ProviderRankingProps)
   if (providers.length === 0) {
     return (
       <Card>
-        <p className="text-sm text-text-muted italic">
-          No providers available
+        <p className="text-sm text-text-muted/60">
+          No providers available for this capability
         </p>
       </Card>
     );
@@ -22,68 +22,85 @@ export function ProviderRanking({ providers, selectedId }: ProviderRankingProps)
 
   return (
     <Card>
-      <h3 className="text-sm font-medium text-text-primary mb-3">
+      <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
         Provider Ranking
       </h3>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="text-text-muted border-b border-border">
-              <th className="pb-2 text-left font-medium">#</th>
-              <th className="pb-2 text-left font-medium">Provider</th>
-              <th className="pb-2 text-right font-medium">Price</th>
-              <th className="pb-2 text-right font-medium">ETA</th>
-              <th className="pb-2 text-right font-medium">Rating</th>
-              <th className="pb-2 text-right font-medium">Stake</th>
-              <th className="pb-2 text-right font-medium">Success</th>
-            </tr>
-          </thead>
-          <tbody>
-            {providers.map((p, i) => (
-              <tr
-                key={p.id}
-                className={`border-b border-border/50 last:border-0 ${
-                  p.id === selectedId
-                    ? "bg-accent/5"
-                    : ""
-                }`}
-              >
-                <td className="py-2 text-text-muted">{i + 1}</td>
-                <td className="py-2">
-                  <div className="flex flex-col">
-                    <span className="font-medium text-text-primary">
-                      {p.name}
-                      {p.id === selectedId && (
-                        <span className="ml-1.5 text-accent text-[10px]">
-                          SELECTED
-                        </span>
-                      )}
-                    </span>
-                    <span className="font-mono text-text-muted text-[10px]">
-                      {truncateAddress(p.address)}
-                    </span>
-                  </div>
-                </td>
-                <td className="py-2 text-right text-text-secondary">
-                  {formatCurrency(p.price)}
-                </td>
-                <td className="py-2 text-right text-text-secondary">
-                  {p.etaMinutes}m
-                </td>
-                <td className="py-2 text-right text-text-secondary">
-                  {p.rating.toFixed(1)}
-                </td>
-                <td className="py-2 text-right text-text-secondary">
-                  {formatCurrency(p.stakeAmount)}
-                </td>
-                <td className="py-2 text-right text-text-secondary">
-                  {(p.successRate * 100).toFixed(0)}%
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex flex-col gap-2.5">
+        {providers.map((p, i) => (
+          <div
+            key={p.id}
+            className={`relative flex items-center gap-4 rounded-xl px-4 py-3.5 transition-all duration-200 ${
+              p.id === selectedId
+                ? "bg-accent/8 border border-accent/25 glow-accent-sm"
+                : "bg-surface-base/30 border border-transparent hover:bg-surface-base/50"
+            }`}
+          >
+            {/* Rank badge */}
+            <div
+              className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold ${
+                i === 0
+                  ? "bg-gradient-to-b from-accent/30 to-accent/10 text-accent"
+                  : "bg-surface-highlight/30 text-text-muted"
+              }`}
+            >
+              {i + 1}
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-text-primary">
+                  {p.name}
+                </span>
+                {p.id === selectedId && (
+                  <span className="text-[10px] font-bold text-accent bg-accent/10 px-1.5 py-0.5 rounded">
+                    SELECTED
+                  </span>
+                )}
+              </div>
+              <span className="font-mono text-[10px] text-text-muted/60">
+                {truncateAddress(p.address)}
+              </span>
+            </div>
+
+            {/* Stats */}
+            <div className="flex items-center gap-5 text-xs">
+              <Stat label="Price" value={formatCurrency(p.price)} />
+              <Stat label="ETA" value={`${p.etaMinutes}m`} />
+              <Stat label="Rating" value={p.rating.toFixed(1)} highlight={p.rating >= 4.5} />
+              <Stat label="Stake" value={formatCurrency(p.stakeAmount)} />
+              <Stat
+                label="Success"
+                value={`${(p.successRate * 100).toFixed(0)}%`}
+                highlight={p.successRate >= 0.95}
+              />
+            </div>
+          </div>
+        ))}
       </div>
     </Card>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="flex flex-col items-end">
+      <span className="text-[10px] text-text-muted/60">{label}</span>
+      <span
+        className={`font-mono font-medium ${
+          highlight ? "text-status-verified" : "text-text-secondary"
+        }`}
+      >
+        {value}
+      </span>
+    </div>
   );
 }

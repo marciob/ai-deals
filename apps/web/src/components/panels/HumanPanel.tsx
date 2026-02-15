@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTask } from "@/hooks/useTask";
 import { SAMPLE_HUMAN_TASKS } from "@/data/sampleTasks";
 import { TaskInbox } from "@/components/human/TaskInbox";
@@ -9,21 +9,16 @@ import { TaskDetail } from "@/components/human/TaskDetail";
 export function HumanPanel() {
   const { state, dispatch } = useTask();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [seeded, setSeeded] = useState(false);
+  const seededRef = useRef(false);
 
-  // Seed sample tasks on first mount
   useEffect(() => {
-    if (seeded) return;
+    if (seededRef.current) return;
+    seededRef.current = true;
     for (const task of SAMPLE_HUMAN_TASKS) {
-      const exists = state.tasks.some((t) => t.id === task.id);
-      if (!exists) {
-        dispatch({ type: "ADD_TASK", task });
-      }
+      dispatch({ type: "ADD_TASK", task });
     }
-    setSeeded(true);
-  }, [seeded, state.tasks, dispatch]);
+  }, [dispatch]);
 
-  // Filter tasks relevant to human role (accepted, in-progress, proof states)
   const humanStatuses = new Set([
     "ACCEPTED",
     "IN_PROGRESS",
@@ -36,7 +31,7 @@ export function HumanPanel() {
     : null;
 
   return (
-    <section className="w-full max-w-5xl mx-auto px-4">
+    <section className="w-full max-w-5xl mx-auto px-4 animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TaskInbox
           tasks={humanTasks}
@@ -47,8 +42,15 @@ export function HumanPanel() {
           {selectedTask ? (
             <TaskDetail task={selectedTask} />
           ) : (
-            <div className="flex items-center justify-center rounded-xl border border-border border-dashed bg-surface-raised p-12 text-sm text-text-muted">
-              Select a task to view details
+            <div className="glass inner-light rounded-2xl flex items-center justify-center min-h-[300px]">
+              <div className="flex flex-col items-center gap-3">
+                <div className="h-12 w-12 rounded-xl bg-surface-highlight/20 flex items-center justify-center">
+                  <span className="text-text-muted/30 text-xl">?</span>
+                </div>
+                <p className="text-sm text-text-muted/50">
+                  Select a task to view details
+                </p>
+              </div>
             </div>
           )}
         </div>

@@ -16,15 +16,15 @@ export function ReceiptView({ task, provider }: ReceiptViewProps) {
   const lastEvent = task.events[task.events.length - 1];
 
   return (
-    <Card>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-medium text-text-primary">
+    <Card glow>
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase">
           Task Receipt
         </h3>
         <StatusBadge status={task.status} />
       </div>
 
-      <div className="flex flex-col gap-3 text-sm">
+      <div className="flex flex-col gap-3.5">
         <Row label="Task ID" value={task.id} mono />
         <Row label="Goal" value={task.contract.goal} />
         <Row label="Capability" value={task.contract.capability} />
@@ -33,12 +33,13 @@ export function ReceiptView({ task, provider }: ReceiptViewProps) {
           <Row
             label="Amount"
             value={formatCurrency(task.escrowAmount, task.contract.currency)}
+            highlight
           />
         )}
         <Row label="Events" value={String(task.events.length)} />
         {lastEvent?.txHash && (
-          <div className="flex items-center justify-between">
-            <span className="text-text-muted">Last TX</span>
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-xs text-text-muted">Last TX</span>
             <TxHashChip hash={lastEvent.txHash} />
           </div>
         )}
@@ -51,16 +52,20 @@ function Row({
   label,
   value,
   mono = false,
+  highlight = false,
 }: {
   label: string;
   value: string;
   mono?: boolean;
+  highlight?: boolean;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4">
-      <span className="text-text-muted flex-shrink-0">{label}</span>
+    <div className="flex items-start justify-between gap-6">
+      <span className="text-xs text-text-muted flex-shrink-0">{label}</span>
       <span
-        className={`text-text-secondary text-right ${mono ? "font-mono text-xs" : ""}`}
+        className={`text-sm text-right ${mono ? "font-mono text-xs text-text-muted" : ""} ${
+          highlight ? "font-semibold text-status-paid" : "text-text-secondary"
+        }`}
       >
         {value}
       </span>

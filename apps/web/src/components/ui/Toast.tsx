@@ -37,7 +37,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5">
         {toasts.map((t) => (
           <ToastItem key={t.id} item={t} onDismiss={dismiss} />
         ))}
@@ -47,9 +47,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 const typeClasses: Record<ToastType, string> = {
-  success: "border-status-verified/50 bg-status-verified/10 text-status-verified",
-  error: "border-status-timed-out/50 bg-status-timed-out/10 text-status-timed-out",
-  info: "border-accent/50 bg-accent/10 text-accent",
+  success: "border-status-verified/30 bg-status-verified/8 text-status-verified",
+  error: "border-status-timed-out/30 bg-status-timed-out/8 text-status-timed-out",
+  info: "border-accent/30 bg-accent/8 text-accent",
 };
 
 function ToastItem({
@@ -66,7 +66,7 @@ function ToastItem({
 
   return (
     <div
-      className={`rounded-lg border px-4 py-3 text-sm shadow-lg backdrop-blur-sm animate-[slideIn_0.2s_ease-out] ${typeClasses[item.type]}`}
+      className={`glass rounded-xl px-5 py-3.5 text-sm font-medium shadow-2xl animate-[slideIn_0.3s_var(--ease-spring)] ${typeClasses[item.type]}`}
     >
       {item.message}
     </div>

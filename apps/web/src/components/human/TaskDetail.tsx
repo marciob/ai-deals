@@ -37,16 +37,16 @@ export function TaskDetail({ task }: TaskDetailProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 animate-fade-in">
       <Card>
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div>
-            <h3 className="text-sm font-medium text-text-primary">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex-1">
+            <h3 className="text-sm font-semibold text-text-primary leading-snug">
               {task.contract.goal}
             </h3>
-            <div className="mt-1 flex items-center gap-2">
+            <div className="mt-2 flex items-center gap-2.5 flex-wrap">
               <StatusBadge status={task.status} />
-              <span className="text-xs text-text-muted">
+              <span className="text-xs text-text-muted font-mono">
                 {formatCurrency(
                   task.escrowAmount ?? task.contract.maxBudget,
                   task.contract.currency
@@ -54,15 +54,23 @@ export function TaskDetail({ task }: TaskDetailProps) {
               </span>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <span className="text-[10px] text-text-muted">SLA</span>
+          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+            <span className="text-[10px] text-text-muted/60 uppercase tracking-wide font-medium">SLA</span>
             <SLATimer deadline={deadline} />
           </div>
         </div>
 
-        <div className="flex flex-col gap-1 text-xs text-text-secondary">
-          <span>Capability: {task.contract.capability}</span>
-          {task.providerId && <span>Provider: {task.providerId}</span>}
+        <div className="flex items-center gap-4 rounded-xl bg-surface-base/30 px-4 py-2.5 text-xs text-text-secondary">
+          <span>
+            <span className="text-text-muted mr-1">Capability</span>
+            {task.contract.capability}
+          </span>
+          {task.providerId && (
+            <span>
+              <span className="text-text-muted mr-1">Provider</span>
+              {task.providerId}
+            </span>
+          )}
         </div>
       </Card>
 
@@ -81,7 +89,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
 
       {task.events.length > 0 && (
         <Card>
-          <h4 className="text-sm font-medium text-text-primary mb-3">
+          <h4 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
             Event History
           </h4>
           <EventTimeline events={task.events} />

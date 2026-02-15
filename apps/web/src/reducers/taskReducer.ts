@@ -28,6 +28,7 @@ export function taskReducer(
 ): TaskState {
   switch (action.type) {
     case "ADD_TASK":
+      if (state.tasks.some((t) => t.id === action.task.id)) return state;
       return { tasks: [...state.tasks, action.task] };
 
     case "TRANSITION": {

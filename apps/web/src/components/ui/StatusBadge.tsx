@@ -9,8 +9,9 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className = "" }: StatusBadgeProps) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_CSS_CLASSES[status]} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-wide ${STATUS_CSS_CLASSES[status]} ${className}`}
     >
+      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
       {STATUS_LABELS[status]}
     </span>
   );

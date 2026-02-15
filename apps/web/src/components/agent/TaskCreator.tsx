@@ -29,7 +29,7 @@ export function TaskCreator({ onCreateTask }: TaskCreatorProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <Textarea
         label="Task Goal"
         placeholder="Book a table for 4 at Nobu Malibu, Friday 8pm..."
@@ -38,17 +38,19 @@ export function TaskCreator({ onCreateTask }: TaskCreatorProps) {
         rows={3}
       />
 
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs text-text-secondary">Capability</label>
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-2.5">
+        <label className="text-xs font-medium text-text-secondary tracking-wide uppercase">
+          Capability
+        </label>
+        <div className="flex gap-2.5">
           {CAPABILITIES.map((cap) => (
             <button
               key={cap.id}
               onClick={() => setCapability(cap.id)}
-              className={`cursor-pointer rounded-lg border px-3 py-2 text-xs font-medium transition-all duration-150 ${
+              className={`cursor-pointer rounded-xl border px-4 py-2.5 text-xs font-semibold transition-all duration-200 ${
                 capability === cap.id
-                  ? "border-accent bg-accent/10 text-accent"
-                  : "border-border bg-surface-base text-text-secondary hover:border-border-hover"
+                  ? "border-accent/50 bg-accent/10 text-accent glow-accent-sm"
+                  : "border-border bg-surface-base/40 text-text-muted hover:border-border-hover hover:text-text-secondary"
               }`}
             >
               {cap.name}
@@ -57,26 +59,35 @@ export function TaskCreator({ onCreateTask }: TaskCreatorProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <div
+      <div className="flex items-center justify-between rounded-xl bg-surface-base/30 px-4 py-3">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={urgent}
             onClick={() => setUrgent(!urgent)}
-            className={`relative h-5 w-9 rounded-full transition-colors duration-200 ${
-              urgent ? "bg-accent" : "bg-surface-highlight"
+            className={`relative h-6 w-11 rounded-full transition-colors duration-250 ease-[var(--ease-snappy)] cursor-pointer ${
+              urgent ? "bg-accent glow-accent-sm" : "bg-surface-highlight"
             }`}
           >
             <div
-              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform duration-200 ease-[var(--ease-spring)] ${
-                urgent ? "translate-x-4" : "translate-x-0.5"
+              className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-250 ease-[var(--ease-spring)] ${
+                urgent ? "translate-x-5.5" : "translate-x-1"
               }`}
             />
+          </button>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium text-text-primary">Urgent</span>
+            <span className="text-[10px] text-text-muted">Higher stake, faster providers</span>
           </div>
-          <span className="text-sm text-text-secondary">Urgent</span>
         </label>
 
-        <span className="text-xs text-text-muted">
-          Budget: up to {maxBudget} USDC
-        </span>
+        <div className="flex flex-col items-end">
+          <span className="text-xs text-text-muted">Budget</span>
+          <span className="text-sm font-semibold text-text-primary font-mono">
+            {maxBudget} <span className="text-text-muted text-xs">USDC</span>
+          </span>
+        </div>
       </div>
 
       <Button onClick={handleSubmit} disabled={!goal.trim()}>

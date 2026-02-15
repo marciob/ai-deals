@@ -3,17 +3,21 @@ import type { HTMLAttributes, ReactNode } from "react";
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
   hover?: boolean;
+  glow?: boolean;
 }
 
 export function Card({
   children,
   hover = false,
+  glow = false,
   className = "",
   ...props
 }: CardProps) {
   return (
     <div
-      className={`rounded-xl border border-border bg-surface-raised p-4 ${hover ? "transition-colors duration-200 ease-[var(--ease-snappy)] hover:border-border-hover hover:bg-surface-overlay" : ""} ${className}`}
+      className={`glass inner-light rounded-2xl p-5 transition-all duration-300 ease-[var(--ease-snappy)] ${
+        hover ? "glass-hover cursor-pointer" : ""
+      } ${glow ? "glow-accent-sm" : ""} ${className}`}
       {...props}
     >
       {children}
