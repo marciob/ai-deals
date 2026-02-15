@@ -1,7 +1,16 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/Card";
 import { CopyCommand } from "@/components/agent/CopyCommand";
+
+function useSkillCommand() {
+  const [origin, setOrigin] = useState("http://localhost:3000");
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+  return `curl -fsSL ${origin}/skill.md`;
+}
 
 const STEPS = [
   {
@@ -25,6 +34,8 @@ const STEPS = [
 ];
 
 export function AgentInstallCard() {
+  const skillCommand = useSkillCommand();
+
   return (
     <Card className="max-w-xl mx-auto">
       <div className="flex flex-col gap-6">
@@ -40,7 +51,7 @@ export function AgentInstallCard() {
         </div>
 
         {/* Copy command */}
-        <CopyCommand command="curl -fsSL https://ai-deals.xyz/skill.md" />
+        <CopyCommand command={skillCommand} />
 
         {/* Steps */}
         <ol className="flex flex-col gap-4 list-none m-0 p-0">

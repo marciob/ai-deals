@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import type { TaskContract } from "@/types/task";
 import type { Provider } from "@/types/provider";
 import { useTask } from "@/hooks/useTask";
+import { useWalletAddress } from "@/hooks/useWalletAddress";
 import { useLifecycleRunner } from "@/hooks/useLifecycleRunner";
 import * as api from "@/lib/api";
 import { apiTaskToTask, apiProviderToProvider } from "@/lib/mappers";
@@ -16,6 +17,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 
 export function LifecycleRunner() {
+  const address = useWalletAddress();
   const { state, dispatch } = useTask();
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -41,6 +43,7 @@ export function LifecycleRunner() {
         slaSeconds: contract.slaSeconds,
         urgent: contract.urgent,
         currency: contract.currency,
+        requesterAddress: address,
       });
       const task = apiTaskToTask(apiTask);
       dispatch({ type: "ADD_TASK", task });
@@ -58,7 +61,7 @@ export function LifecycleRunner() {
       }
       setPhase("providers");
     },
-    [dispatch]
+    [dispatch, address]
   );
 
   const handleRunAgent = useCallback(async () => {
