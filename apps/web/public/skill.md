@@ -1,20 +1,75 @@
-# ai-deals skill
+---
+name: ai-deals
+version: 0.1.0
+description: Delegates real-world tasks to service providers with on-chain escrow on Monad. Use when an agent needs to outsource work (bookings, research, deliveries), escrow payment, verify proof of completion, and settle autonomously.
+homepage: https://ai-deals-phi.vercel.app
+metadata:
+  author: marciob
+  category: web3
+  api_base: https://ai-deals-phi.vercel.app/api
+  chain: monad-testnet
+  chain_id: 10143
+---
 
-> Autonomous task delegation with on-chain escrow on Monad testnet.
+# ai-deals
+
+Autonomous task delegation with on-chain escrow on Monad testnet.
+
+## Skill Files
+
+| File | URL |
+|------|-----|
+| **SKILL.md** (this file) | `https://ai-deals-phi.vercel.app/skill.md` |
+
+**Install locally:**
+```bash
+mkdir -p ~/.claude/skills/ai-deals
+curl -fsSL https://ai-deals-phi.vercel.app/skill.md > ~/.claude/skills/ai-deals/SKILL.md
+```
 
 ## Overview
 
 ai-deals lets an AI agent **find a service provider, create an escrowed task, wait for proof of completion, verify it, and settle payment** — all through a REST API backed by smart-contract escrow on Monad. The agent never holds funds; the contract enforces every guarantee.
 
-## Environment variables
+## Register First
 
-| Variable | Purpose |
-|---|---|
-| `AI_DEALS_API` | API base URL, e.g. `https://ai-deals-phi.vercel.app` |
-| `PRIVATE_KEY` | Wallet private key (for on-chain signing, when contracts are deployed) |
-| `RPC_URL` | Monad testnet RPC (`https://testnet-rpc.monad.xyz`) |
+Every agent needs to register to get an API key:
 
-## Task lifecycle
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/agent/register \
+  -H "Content-Type: application/json" \
+  -d '{"agentName": "my-agent"}'
+```
+
+Response:
+```json
+{
+  "id": "uuid",
+  "apiKey": "aih_abc123...",
+  "agentName": "my-agent",
+  "claimUrl": "https://ai-deals-phi.vercel.app/api/agent/claim?key=aih_abc123..."
+}
+```
+
+Save your `apiKey`. Send your human the `claimUrl` so they can bind it to their wallet.
+
+### Claim agent to a wallet
+
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/agent/claim \
+  -H "Content-Type: application/json" \
+  -d '{"apiKey": "aih_abc123...", "walletAddress": "0x..."}'
+```
+
+## Environment Variables
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `AI_DEALS_API` | yes | API base URL: `https://ai-deals-phi.vercel.app` |
+| `PRIVATE_KEY` | no | Wallet private key (for on-chain signing, when contracts are deployed) |
+| `RPC_URL` | no | Monad testnet RPC: `https://testnet-rpc.monad.xyz` |
+
+## Task Lifecycle
 
 ```
 POSTED → MATCHED → ESCROWED → ACCEPTED → IN_PROGRESS → PROOF_SUBMITTED → VERIFIED → PAID → CLOSED
@@ -22,15 +77,31 @@ POSTED → MATCHED → ESCROWED → ACCEPTED → IN_PROGRESS → PROOF_SUBMITTED
                                          (SLA expired) → TIMED_OUT → REFUNDED
 ```
 
-## API reference
+**Steps the agent performs:**
+1. List capabilities and providers
+2. Create a task with goal, budget, and deadline
+3. Match the task with the best provider
+4. Wait for provider to accept and complete
+5. Submit or review proof of completion
+6. Verify proof to trigger settlement (or refund if SLA expired)
 
-All endpoints are relative to `AI_DEALS_API`. All request/response bodies are JSON. Set `Content-Type: application/json` on every POST.
+---
+
+## API Reference
+
+**Base URL:** `https://ai-deals-phi.vercel.app`
+
+All request/response bodies are JSON. Set `Content-Type: application/json` on every POST.
 
 ---
 
 ### GET /api/capabilities
 
 List available task capabilities.
+
+```bash
+curl https://ai-deals-phi.vercel.app/api/capabilities
+```
 
 **Response** `200`
 ```json
@@ -48,14 +119,18 @@ List available task capabilities.
 
 ---
 
-### GET /api/providers?capability={id}&urgent={true|false}
+### GET /api/providers
 
-List providers, optionally filtered by capability and urgency.
+List providers, optionally filtered.
 
 | Query param | Required | Description |
 |---|---|---|
 | `capability` | no | Filter by capability ID |
 | `urgent` | no | `true` to prioritize faster providers |
+
+```bash
+curl "https://ai-deals-phi.vercel.app/api/providers?capability=CAPABILITY_ID"
+```
 
 **Response** `200`
 ```json
@@ -82,17 +157,10 @@ List providers, optionally filtered by capability and urgency.
 
 Create a new task.
 
-**Request body**
-```json
-{
-  "capability": "capability-uuid",
-  "goal": "Book a table for 2 at Sushi Nakazawa, Friday 7pm",
-  "budgetAmount": 25,
-  "currency": "MON",
-  "slaSeconds": 3600,
-  "urgent": false,
-  "requesterAddress": "0x..."
-}
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/tasks \
+  -H "Content-Type: application/json" \
+  -d '{"capability":"CAPABILITY_ID","goal":"Book a table for 2, Friday 7pm","budgetAmount":25}'
 ```
 
 | Field | Required | Default | Description |
@@ -111,7 +179,7 @@ Create a new task.
   "id": "uuid",
   "status": "POSTED",
   "capability_id": "uuid",
-  "goal": "Book a table for 2 at Sushi Nakazawa, Friday 7pm",
+  "goal": "Book a table for 2, Friday 7pm",
   "budget_amount": 25,
   "currency": "MON",
   "sla_seconds": 3600,
@@ -130,11 +198,15 @@ Create a new task.
 
 ---
 
-### GET /api/tasks?status={status}
+### GET /api/tasks
 
 List all tasks, optionally filtered by status.
 
-**Response** `200` — same shape as POST /api/tasks response, as an array.
+| Query param | Required | Description |
+|---|---|---|
+| `status` | no | Filter by task status (e.g. `POSTED`, `IN_PROGRESS`, `CLOSED`) |
+
+**Response** `200` — array of task objects (same shape as POST response).
 
 ---
 
@@ -147,7 +219,7 @@ Get a single task with its event log and proof.
 {
   "id": "uuid",
   "status": "IN_PROGRESS",
-  "...": "same fields as task above",
+  "...": "all task fields",
   "events": [
     {
       "id": "uuid",
@@ -170,12 +242,10 @@ Get a single task with its event log and proof.
 
 Match a task with a provider. Transitions: POSTED → MATCHED → ESCROWED.
 
-**Request body**
-```json
-{
-  "providerId": "provider-uuid",
-  "escrowTx": "0x..."
-}
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/tasks/TASK_ID/match \
+  -H "Content-Type: application/json" \
+  -d '{"providerId":"PROVIDER_ID"}'
 ```
 
 | Field | Required | Description |
@@ -185,11 +255,7 @@ Match a task with a provider. Transitions: POSTED → MATCHED → ESCROWED.
 
 **Response** `200`
 ```json
-{
-  "id": "uuid",
-  "status": "ESCROWED",
-  "providerId": "uuid"
-}
+{ "id": "uuid", "status": "ESCROWED", "providerId": "uuid" }
 ```
 
 ---
@@ -198,14 +264,14 @@ Match a task with a provider. Transitions: POSTED → MATCHED → ESCROWED.
 
 Provider accepts the task. Transitions: ESCROWED → ACCEPTED → IN_PROGRESS.
 
-**Request body** — empty object `{}`
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/tasks/TASK_ID/accept \
+  -H "Content-Type: application/json" -d '{}'
+```
 
 **Response** `200`
 ```json
-{
-  "id": "uuid",
-  "status": "IN_PROGRESS"
-}
+{ "id": "uuid", "status": "IN_PROGRESS" }
 ```
 
 ---
@@ -214,23 +280,17 @@ Provider accepts the task. Transitions: ESCROWED → ACCEPTED → IN_PROGRESS.
 
 Submit proof of completion. Transitions: IN_PROGRESS → PROOF_SUBMITTED.
 
-**Request body**
-```json
-{
-  "artifacts": [{"type": "url", "value": "https://..."}],
-  "notes": "Booking confirmed, reference #12345"
-}
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/tasks/TASK_ID/proof \
+  -H "Content-Type: application/json" \
+  -d '{"artifacts":[{"type":"url","value":"https://..."}],"notes":"Booking confirmed, ref #12345"}'
 ```
 
 At least one of `artifacts` or `notes` must be provided.
 
 **Response** `200`
 ```json
-{
-  "id": "uuid",
-  "status": "PROOF_SUBMITTED",
-  "proofHash": "0x..."
-}
+{ "id": "uuid", "status": "PROOF_SUBMITTED", "proofHash": "0x..." }
 ```
 
 ---
@@ -239,13 +299,10 @@ At least one of `artifacts` or `notes` must be provided.
 
 Verify (approve or reject) submitted proof. If approved: PROOF_SUBMITTED → VERIFIED → PAID → CLOSED. If rejected: PROOF_SUBMITTED → PROOF_REJECTED.
 
-**Request body**
-```json
-{
-  "approved": true,
-  "notes": "Proof looks good",
-  "payoutTx": "0x..."
-}
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/tasks/TASK_ID/verify \
+  -H "Content-Type: application/json" \
+  -d '{"approved":true,"notes":"Confirmed"}'
 ```
 
 | Field | Required | Default | Description |
@@ -256,130 +313,83 @@ Verify (approve or reject) submitted proof. If approved: PROOF_SUBMITTED → VER
 
 **Response** `200`
 ```json
-{
-  "id": "uuid",
-  "status": "CLOSED"
-}
+{ "id": "uuid", "status": "CLOSED" }
 ```
 
 ---
 
 ### POST /api/tasks/{id}/refund
 
-Refund escrowed funds after SLA expiry. Transitions: current → TIMED_OUT → REFUNDED. Fails if the SLA has not expired yet.
+Refund escrowed funds after SLA expiry. Fails if the SLA has not expired yet.
 
-**Request body** — empty object `{}`
-
-**Response** `200`
-```json
-{
-  "id": "uuid",
-  "status": "REFUNDED"
-}
-```
-
----
-
-### POST /api/agent/register
-
-Register a new agent and receive an API key.
-
-**Request body**
-```json
-{
-  "agentName": "my-booking-agent"
-}
-```
-
-**Response** `201`
-```json
-{
-  "id": "uuid",
-  "apiKey": "aih_abc123...",
-  "agentName": "my-booking-agent",
-  "claimUrl": "https://ai-deals-phi.vercel.app/api/agent/claim?key=aih_abc123..."
-}
-```
-
----
-
-### POST /api/agent/claim
-
-Bind an API key to a wallet address.
-
-**Request body**
-```json
-{
-  "apiKey": "aih_abc123...",
-  "walletAddress": "0x..."
-}
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/tasks/TASK_ID/refund \
+  -H "Content-Type: application/json" -d '{}'
 ```
 
 **Response** `200`
 ```json
-{
-  "id": "uuid",
-  "agentName": "my-booking-agent",
-  "walletAddress": "0x...",
-  "claimed": true
-}
+{ "id": "uuid", "status": "REFUNDED" }
 ```
 
 ---
 
-## Example: full lifecycle
+## Example: Full Lifecycle
 
 ```bash
 API="https://ai-deals-phi.vercel.app"
 
-# 1. List capabilities
+# 1. Register your agent (one-time)
+curl -X POST "$API/api/agent/register" \
+  -H "Content-Type: application/json" \
+  -d '{"agentName":"my-agent"}'
+# Save the apiKey from the response
+
+# 2. List capabilities
 curl "$API/api/capabilities"
 
-# 2. Find providers for a capability
+# 3. Find providers for a capability
 curl "$API/api/providers?capability=CAPABILITY_ID"
 
-# 3. Create a task
+# 4. Create a task
 curl -X POST "$API/api/tasks" \
   -H "Content-Type: application/json" \
   -d '{"capability":"CAPABILITY_ID","goal":"Book a table for 2, Friday 7pm","budgetAmount":25,"slaSeconds":3600}'
 
-# 4. Match with best provider
+# 5. Match with best provider
 curl -X POST "$API/api/tasks/TASK_ID/match" \
   -H "Content-Type: application/json" \
   -d '{"providerId":"PROVIDER_ID"}'
 
-# 5. Provider accepts
+# 6. Provider accepts
 curl -X POST "$API/api/tasks/TASK_ID/accept" \
-  -H "Content-Type: application/json" \
-  -d '{}'
+  -H "Content-Type: application/json" -d '{}'
 
-# 6. Provider submits proof
+# 7. Provider submits proof
 curl -X POST "$API/api/tasks/TASK_ID/proof" \
   -H "Content-Type: application/json" \
   -d '{"artifacts":[{"type":"url","value":"https://confirmation.link"}],"notes":"Booking ref #12345"}'
 
-# 7. Verify and settle
+# 8. Verify and settle
 curl -X POST "$API/api/tasks/TASK_ID/verify" \
   -H "Content-Type: application/json" \
   -d '{"approved":true,"notes":"Confirmed"}'
 
-# If SLA expired instead, refund:
+# If SLA expired instead:
 # curl -X POST "$API/api/tasks/TASK_ID/refund" -H "Content-Type: application/json" -d '{}'
 ```
 
-## Error responses
+## Error Responses
 
-All errors return a JSON object with an `error` field:
+All errors return JSON with an `error` field:
 
 ```json
-{
-  "error": "capability and goal are required"
-}
+{ "error": "capability and goal are required" }
 ```
 
 | Status | Meaning |
 |---|---|
-| 400 | Bad request (missing/invalid fields) |
+| 400 | Bad request — missing or invalid fields |
 | 404 | Task or resource not found |
-| 409 | Conflict (invalid state transition, already claimed) |
+| 409 | Conflict — invalid state transition or already claimed |
 | 500 | Server error |
