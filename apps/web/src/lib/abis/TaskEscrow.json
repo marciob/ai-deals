@@ -1,0 +1,47 @@
+[
+  {
+    "type": "function",
+    "name": "escrows",
+    "inputs": [{ "name": "taskId", "type": "bytes32" }],
+    "outputs": [
+      { "name": "requester", "type": "address" },
+      { "name": "provider", "type": "address" },
+      { "name": "amount", "type": "uint256" },
+      { "name": "status", "type": "uint8" },
+      { "name": "createdAt", "type": "uint256" },
+      { "name": "taskHash", "type": "bytes32" },
+      { "name": "proofHash", "type": "bytes32" },
+      { "name": "minStake", "type": "uint256" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "escrowExists",
+    "inputs": [{ "name": "taskId", "type": "bytes32" }],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getEscrow",
+    "inputs": [{ "name": "taskId", "type": "bytes32" }],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "components": [
+          { "name": "requester", "type": "address" },
+          { "name": "provider", "type": "address" },
+          { "name": "amount", "type": "uint256" },
+          { "name": "status", "type": "uint8" },
+          { "name": "createdAt", "type": "uint256" },
+          { "name": "taskHash", "type": "bytes32" },
+          { "name": "proofHash", "type": "bytes32" },
+          { "name": "minStake", "type": "uint256" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  }
+]
