@@ -3,7 +3,6 @@ import { supabase } from "@/lib/supabase";
 import { ok, badRequest, notFound, conflict, serverError } from "@/lib/apiResponse";
 import { transition } from "@/lib/stateMachine";
 import { isEligible } from "@/lib/chain";
-import type { Address } from "viem";
 import type { TaskStatus, TaskAction } from "@/types/task";
 
 export async function POST(
@@ -43,7 +42,7 @@ export async function POST(
 
     // On-chain eligibility check
     const eligible = await isEligible(
-      provider.wallet_address as Address,
+      provider.wallet_address,
       BigInt(Math.floor((task.min_stake ?? 0) * 1e18))
     );
     if (!eligible) return conflict("Provider does not meet minimum stake requirement");

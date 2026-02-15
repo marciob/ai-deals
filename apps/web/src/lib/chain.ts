@@ -1,4 +1,4 @@
-import { createPublicClient, http, type Address } from "viem";
+import { createPublicClient, http, getAddress, type Address } from "viem";
 import { defineChain } from "viem";
 import StakeRegistryABI from "./abis/StakeRegistry.json";
 
@@ -7,7 +7,7 @@ const monadTestnet = defineChain({
   name: "Monad Testnet",
   nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
   rpcUrls: {
-    default: { http: [process.env.NEXT_PUBLIC_CHAIN_RPC!] },
+    default: { http: [process.env.NEXT_PUBLIC_CHAIN_RPC ?? "https://testnet-rpc.monad.xyz"] },
   },
 });
 
@@ -17,20 +17,21 @@ export const publicClient = createPublicClient({
 });
 
 export async function isEligible(
-  providerAddress: Address,
+  providerAddress: string,
   minStake: bigint
 ): Promise<boolean> {
-  const registryAddress = process.env.STAKE_REGISTRY_ADDRESS as Address;
+  const registryAddress = process.env.STAKE_REGISTRY_ADDRESS;
   if (!registryAddress || registryAddress === "0x0000000000000000000000000000000000000000") {
     // Contracts not deployed yet — skip on-chain check
     return true;
   }
 
+  const normalized = getAddress(providerAddress.toLowerCase());
   const result = await publicClient.readContract({
-    address: registryAddress,
+    address: registryAddress as Address,
     abi: StakeRegistryABI,
     functionName: "isEligible",
-    args: [providerAddress, minStake],
+    args: [normalized, minStake],
   });
   return result as boolean;
 }
