@@ -18,13 +18,13 @@ export function ReceiptView({ task, provider }: ReceiptViewProps) {
   return (
     <Card glow>
       <div className="flex items-center justify-between mb-5">
-        <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase">
+        <h3 className="text-sm font-semibold text-text-primary">
           Task Receipt
         </h3>
         <StatusBadge status={task.status} />
       </div>
 
-      <div className="flex flex-col gap-3.5">
+      <div className="flex flex-col gap-3">
         <Row label="Task ID" value={task.id} mono />
         <Row label="Goal" value={task.contract.goal} />
         <Row label="Capability" value={task.contract.capability} />

@@ -22,7 +22,7 @@ export function DecisionPanel({
   loading = false,
 }: DecisionPanelProps) {
   return (
-    <div className="glass inner-light rounded-2xl p-5 border-l-2 border-l-accent/50">
+    <div className="card-elevated rounded-2xl p-5 border-l-2 border-l-accent/40">
       <div className="mb-3">
         <h4 className="text-sm font-semibold text-text-primary">{title}</h4>
         {description && (

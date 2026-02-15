@@ -13,17 +13,17 @@ const typeIcons: Record<ProofArtifact["type"], string> = {
 };
 
 const typeColors: Record<ProofArtifact["type"], string> = {
-  screenshot: "from-status-in-progress/30 to-status-in-progress/10 text-status-in-progress",
-  confirmation_code: "from-accent/30 to-accent/10 text-accent",
-  receipt: "from-status-verified/30 to-status-verified/10 text-status-verified",
-  text: "from-status-proof-submitted/30 to-status-proof-submitted/10 text-status-proof-submitted",
+  screenshot: "bg-status-in-progress/10 text-status-in-progress",
+  confirmation_code: "bg-accent/10 text-accent",
+  receipt: "bg-status-verified/10 text-status-verified",
+  text: "bg-status-proof-submitted/10 text-status-proof-submitted",
 };
 
 export function ProofArtifactCard({ artifact }: ProofArtifactCardProps) {
   return (
-    <div className="flex items-start gap-3.5 rounded-xl border border-border bg-surface-base/40 p-3.5">
+    <div className="flex items-start gap-3.5 rounded-xl border border-border bg-surface-raised p-3.5">
       <div
-        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-b font-mono text-[10px] font-bold ${typeColors[artifact.type]}`}
+        className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg font-mono text-[10px] font-bold ${typeColors[artifact.type]}`}
       >
         {typeIcons[artifact.type]}
       </div>
@@ -34,7 +34,7 @@ export function ProofArtifactCard({ artifact }: ProofArtifactCardProps) {
         <span className="text-xs text-text-muted font-mono truncate">
           {artifact.value}
         </span>
-        <span className="text-[10px] text-text-muted/60">
+        <span className="text-[10px] text-text-muted">
           {formatTimestamp(artifact.timestamp)}
         </span>
       </div>

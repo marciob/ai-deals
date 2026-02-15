@@ -15,9 +15,9 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`glass inner-light rounded-2xl p-5 transition-all duration-300 ease-[var(--ease-snappy)] ${
-        hover ? "glass-hover cursor-pointer" : ""
-      } ${glow ? "glow-accent-sm" : ""} ${className}`}
+      className={`card-elevated rounded-2xl p-5 transition-all duration-200 ease-[var(--ease-snappy)] ${
+        hover ? "card-elevated-hover cursor-pointer" : ""
+      } ${glow ? "border-accent/20" : ""} ${className}`}
       {...props}
     >
       {children}

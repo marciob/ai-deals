@@ -12,7 +12,7 @@ export function IncomingRequests() {
   if (requests.length === 0) {
     return (
       <Card className="flex items-center justify-center min-h-[200px]">
-        <p className="text-sm text-text-muted/60">
+        <p className="text-sm text-text-muted">
           No incoming requests
         </p>
       </Card>
@@ -21,7 +21,7 @@ export function IncomingRequests() {
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase">
+      <h3 className="text-sm font-semibold text-text-primary">
         Incoming Requests
       </h3>
       {requests.map((task) => (
@@ -32,7 +32,7 @@ export function IncomingRequests() {
                 <p className="text-sm font-medium text-text-primary leading-snug">
                   {task.contract.goal}
                 </p>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <StatusBadge status={task.status} />
                   <span className="text-[11px] text-text-muted font-mono">
                     {task.contract.capability}

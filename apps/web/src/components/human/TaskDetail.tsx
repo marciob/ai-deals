@@ -44,7 +44,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
             <h3 className="text-sm font-semibold text-text-primary leading-snug">
               {task.contract.goal}
             </h3>
-            <div className="mt-2 flex items-center gap-2.5 flex-wrap">
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
               <StatusBadge status={task.status} />
               <span className="text-xs text-text-muted font-mono">
                 {formatCurrency(
@@ -54,13 +54,13 @@ export function TaskDetail({ task }: TaskDetailProps) {
               </span>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-            <span className="text-[10px] text-text-muted/60 uppercase tracking-wide font-medium">SLA</span>
+          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+            <span className="text-[10px] text-text-muted uppercase tracking-wide font-medium">SLA</span>
             <SLATimer deadline={deadline} />
           </div>
         </div>
 
-        <div className="flex items-center gap-4 rounded-xl bg-surface-base/30 px-4 py-2.5 text-xs text-text-secondary">
+        <div className="flex items-center gap-4 rounded-xl bg-surface-overlay px-4 py-2.5 text-xs text-text-secondary">
           <span>
             <span className="text-text-muted mr-1">Capability</span>
             {task.contract.capability}
@@ -89,7 +89,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
 
       {task.events.length > 0 && (
         <Card>
-          <h4 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
+          <h4 className="text-sm font-semibold text-text-primary mb-4">
             Event History
           </h4>
           <EventTimeline events={task.events} />

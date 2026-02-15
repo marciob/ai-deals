@@ -3,10 +3,10 @@ import type { ModeContent } from "@/types/mode";
 export const MODE_CONTENT: ModeContent[] = [
   {
     mode: "agent",
-    headline: "Autonomous Task Execution",
+    headline: "Built for AI Agents",
     subtitle:
-      "Define a goal in natural language. Your AI agent finds a provider, escrows payment, verifies proof, and settles — all on-chain.",
-    cta: "Launch Agent",
+      "Install the ai-deals skill and let your agent negotiate, escrow, and settle tasks autonomously on-chain.",
+    cta: "Install Skill",
   },
   {
     mode: "human",

@@ -70,7 +70,7 @@ export function LifecycleRunner() {
         <div className="flex flex-col gap-5">
           {phase === "create" && (
             <Card>
-              <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
+              <h3 className="text-sm font-semibold text-text-primary mb-4">
                 Define Task
               </h3>
               <TaskCreator onCreateTask={handleCreateTask} />
@@ -83,36 +83,38 @@ export function LifecycleRunner() {
                 providers={providers}
                 selectedId={selectedProvider?.id}
               />
-              <Button onClick={handleRunAgent} disabled={!selectedProvider}>
-                Run Agent Lifecycle
-              </Button>
+              <div className="flex gap-3">
+                <Button onClick={handleRunAgent} disabled={!selectedProvider}>
+                  Run Agent Lifecycle
+                </Button>
+                <Button variant="secondary" onClick={handleReset}>
+                  Back
+                </Button>
+              </div>
             </div>
           )}
 
           {phase === "running" && (
-            <Card glow className="animate-pulse-glow">
-              <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
+            <Card glow>
+              <h3 className="text-sm font-semibold text-text-primary mb-4">
                 Agent Running
               </h3>
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="relative h-3 w-3">
-                    <div className="absolute inset-0 rounded-full bg-accent animate-ping opacity-40" />
-                    <div className="relative h-3 w-3 rounded-full bg-accent" />
-                  </div>
+                  <div className="h-2.5 w-2.5 rounded-full bg-accent animate-pulse-subtle" />
                   <span className="text-sm text-text-primary font-medium">
                     Step {lifecycle.currentStep + 1} of {lifecycle.totalSteps}
                   </span>
                   {lifecycle.currentAction && (
-                    <span className="text-xs text-text-muted font-mono bg-surface-base/50 px-2 py-0.5 rounded">
+                    <span className="text-xs text-text-muted font-mono bg-surface-overlay px-2 py-0.5 rounded-md">
                       {lifecycle.currentAction}
                     </span>
                   )}
                 </div>
                 {/* Progress bar */}
-                <div className="h-2 w-full rounded-full bg-surface-base/50 overflow-hidden">
+                <div className="h-1.5 w-full rounded-full bg-surface-highlight overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-gradient-to-r from-accent to-[oklch(0.60_0.24_300)] transition-all duration-500 ease-[var(--ease-snappy)]"
+                    className="h-full rounded-full bg-accent transition-all duration-500 ease-[var(--ease-snappy)]"
                     style={{
                       width: `${((lifecycle.currentStep + 1) / lifecycle.totalSteps) * 100}%`,
                     }}
@@ -140,7 +142,7 @@ export function LifecycleRunner() {
           )}
 
           {lifecycle.error && (
-            <Card className="border-status-timed-out/30">
+            <Card className="!border-status-timed-out/30">
               <p className="text-sm text-status-timed-out">
                 {lifecycle.error}
               </p>
@@ -153,7 +155,7 @@ export function LifecycleRunner() {
           <TaskContractPreview task={activeTask} />
           {activeTask && activeTask.events.length > 0 && (
             <Card>
-              <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
+              <h3 className="text-sm font-semibold text-text-primary mb-4">
                 Event Log
               </h3>
               <EventTimeline events={activeTask.events} />

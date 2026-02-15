@@ -25,7 +25,7 @@ export function ProofSubmission({ onSubmit }: ProofSubmissionProps) {
 
   return (
     <Card>
-      <h4 className="text-xs font-semibold text-text-secondary tracking-wide uppercase mb-4">
+      <h4 className="text-sm font-semibold text-text-primary mb-4">
         Submit Proof
       </h4>
       <div className="flex flex-col gap-4">
@@ -42,12 +42,12 @@ export function ProofSubmission({ onSubmit }: ProofSubmissionProps) {
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
         />
-        <div className="rounded-xl border border-dashed border-border/60 bg-surface-base/20 p-6 text-center transition-colors hover:border-border-hover/60 hover:bg-surface-base/30 cursor-pointer">
+        <div className="rounded-xl border border-dashed border-border bg-surface-overlay p-6 text-center transition-colors hover:border-border-hover cursor-pointer">
           <div className="flex flex-col items-center gap-1.5">
-            <div className="h-8 w-8 rounded-lg bg-surface-highlight/30 flex items-center justify-center text-text-muted/40 text-sm">
+            <div className="h-8 w-8 rounded-lg bg-surface-highlight flex items-center justify-center text-text-muted text-sm">
               +
             </div>
-            <p className="text-xs text-text-muted/60">
+            <p className="text-xs text-text-muted">
               Drag & drop files or click to upload
             </p>
           </div>

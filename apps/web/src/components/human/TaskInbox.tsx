@@ -21,10 +21,10 @@ export function TaskInbox({
     return (
       <Card className="flex items-center justify-center min-h-[200px]">
         <div className="flex flex-col items-center gap-2">
-          <div className="h-10 w-10 rounded-xl bg-surface-highlight/30 flex items-center justify-center">
-            <span className="text-text-muted/40 text-lg">0</span>
+          <div className="h-10 w-10 rounded-xl bg-surface-highlight flex items-center justify-center">
+            <span className="text-text-muted text-lg">0</span>
           </div>
-          <p className="text-sm text-text-muted/60">
+          <p className="text-sm text-text-muted">
             No tasks in your inbox
           </p>
         </div>
@@ -34,7 +34,7 @@ export function TaskInbox({
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-xs font-semibold text-text-secondary tracking-wide uppercase">
+      <h3 className="text-sm font-semibold text-text-primary">
         Task Inbox
       </h3>
       {tasks.map((task) => {
@@ -44,7 +44,7 @@ export function TaskInbox({
           <Card
             key={task.id}
             hover
-            className={isSelected ? "!border-accent/40 glow-accent-sm" : ""}
+            className={isSelected ? "!border-accent/30" : ""}
             onClick={() => onSelectTask(task.id)}
           >
             <div className="flex items-start justify-between gap-4">
@@ -52,7 +52,7 @@ export function TaskInbox({
                 <p className="text-sm font-medium text-text-primary leading-snug">
                   {task.contract.goal}
                 </p>
-                <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
                   <StatusBadge status={task.status} />
                   <span className="text-xs text-text-muted font-mono">
                     {formatCurrency(
@@ -61,7 +61,7 @@ export function TaskInbox({
                     )}
                   </span>
                   {task.contract.urgent && (
-                    <span className="text-[10px] font-bold text-status-proof-submitted bg-status-proof-submitted/10 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] font-semibold text-status-proof-submitted bg-status-proof-submitted/8 px-1.5 py-0.5 rounded">
                       URGENT
                     </span>
                   )}

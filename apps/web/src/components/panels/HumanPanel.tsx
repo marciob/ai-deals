@@ -42,12 +42,12 @@ export function HumanPanel() {
           {selectedTask ? (
             <TaskDetail task={selectedTask} />
           ) : (
-            <div className="glass inner-light rounded-2xl flex items-center justify-center min-h-[300px]">
+            <div className="card-elevated rounded-2xl flex items-center justify-center min-h-[300px]">
               <div className="flex flex-col items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-surface-highlight/20 flex items-center justify-center">
-                  <span className="text-text-muted/30 text-xl">?</span>
+                <div className="h-12 w-12 rounded-xl bg-surface-highlight flex items-center justify-center">
+                  <span className="text-text-muted text-xl">?</span>
                 </div>
-                <p className="text-sm text-text-muted/50">
+                <p className="text-sm text-text-muted">
                   Select a task to view details
                 </p>
               </div>

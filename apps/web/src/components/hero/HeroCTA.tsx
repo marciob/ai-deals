@@ -13,8 +13,13 @@ export function HeroCTA({ onAction }: HeroCTAProps) {
   const content = getModeContent(mode);
 
   return (
-    <Button size="lg" onClick={onAction}>
-      {content.cta}
-    </Button>
+    <div className="flex items-center gap-3">
+      <Button size="lg" onClick={onAction}>
+        {content.cta}
+      </Button>
+      <Button variant="secondary" size="lg" onClick={onAction}>
+        Learn more
+      </Button>
+    </div>
   );
 }

@@ -4,10 +4,10 @@ import { useRef, useState, useEffect } from "react";
 import type { AppMode } from "@/types/mode";
 import { useMode } from "@/hooks/useMode";
 
-const MODES: { value: AppMode; label: string; icon: string }[] = [
-  { value: "agent", label: "Agent", icon: "A" },
-  { value: "human", label: "Human", icon: "H" },
-  { value: "business", label: "Business", icon: "B" },
+const MODES: { value: AppMode; label: string; article: string }[] = [
+  { value: "agent", label: "Agent", article: "an" },
+  { value: "human", label: "Human", article: "a" },
+  { value: "business", label: "Business", article: "a" },
 ];
 
 export function SegmentedToggle() {
@@ -27,28 +27,33 @@ export function SegmentedToggle() {
   }, [mode]);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative inline-flex glass rounded-full p-1.5"
-    >
-      {/* Sliding highlight with gradient */}
+    <div className="flex items-center gap-3">
+      <span className="text-sm font-medium text-text-muted">
+        I am {MODES.find((m) => m.value === mode)?.article}
+      </span>
       <div
-        className="absolute top-1.5 h-[calc(100%-12px)] rounded-full bg-gradient-to-r from-accent to-[oklch(0.58_0.22_300)] transition-all duration-400 ease-[var(--ease-spring)] glow-accent-sm"
-        style={{ left: highlight.left, width: highlight.width }}
-      />
-      {MODES.map((m) => (
-        <button
-          key={m.value}
-          onClick={() => setMode(m.value)}
-          className={`relative z-10 cursor-pointer rounded-full px-6 py-2.5 text-sm font-semibold tracking-[-0.01em] transition-colors duration-200 ${
-            mode === m.value
-              ? "text-white"
-              : "text-text-muted hover:text-text-secondary"
-          }`}
-        >
-          {m.label}
-        </button>
-      ))}
+        ref={containerRef}
+        className="relative inline-flex rounded-xl border border-border bg-surface-raised p-1 shadow-sm"
+      >
+        {/* Sliding highlight */}
+        <div
+          className="absolute top-1 h-[calc(100%-8px)] rounded-lg bg-accent transition-all duration-300 ease-[var(--ease-spring)]"
+          style={{ left: highlight.left, width: highlight.width }}
+        />
+        {MODES.map((m) => (
+          <button
+            key={m.value}
+            onClick={() => setMode(m.value)}
+            className={`relative z-10 cursor-pointer rounded-lg px-5 py-2 text-sm font-medium transition-colors duration-150 ${
+              mode === m.value
+                ? "text-white"
+                : "text-text-muted hover:text-text-primary"
+            }`}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

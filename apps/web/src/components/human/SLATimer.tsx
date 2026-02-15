@@ -15,10 +15,10 @@ export function SLATimer({ deadline, className = "" }: SLATimerProps) {
     <div
       className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs ${
         isExpired
-          ? "bg-status-timed-out/10 text-status-timed-out"
+          ? "bg-status-timed-out/8 text-status-timed-out"
           : isUrgent
-            ? "bg-status-proof-submitted/10 text-status-proof-submitted animate-pulse"
-            : "bg-surface-highlight/20 text-text-secondary"
+            ? "bg-status-proof-submitted/8 text-status-proof-submitted"
+            : "bg-surface-highlight text-text-secondary"
       } ${className}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${

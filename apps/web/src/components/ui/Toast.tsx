@@ -47,9 +47,9 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 const typeClasses: Record<ToastType, string> = {
-  success: "border-status-verified/30 bg-status-verified/8 text-status-verified",
-  error: "border-status-timed-out/30 bg-status-timed-out/8 text-status-timed-out",
-  info: "border-accent/30 bg-accent/8 text-accent",
+  success: "border-status-verified/20 bg-surface-raised text-status-verified",
+  error: "border-status-timed-out/20 bg-surface-raised text-status-timed-out",
+  info: "border-accent/20 bg-surface-raised text-accent",
 };
 
 function ToastItem({
@@ -66,7 +66,7 @@ function ToastItem({
 
   return (
     <div
-      className={`glass rounded-xl px-5 py-3.5 text-sm font-medium shadow-2xl animate-[slideIn_0.3s_var(--ease-spring)] ${typeClasses[item.type]}`}
+      className={`rounded-xl border px-5 py-3.5 text-sm font-medium shadow-lg animate-[slideIn_0.3s_var(--ease-spring)] ${typeClasses[item.type]}`}
     >
       {item.message}
     </div>

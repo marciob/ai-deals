@@ -8,11 +8,11 @@ export function HeroHeadline() {
   const content = getModeContent(mode);
 
   return (
-    <div className="flex flex-col items-center gap-5 text-center animate-fade-in">
-      <h1 className="text-4xl font-bold tracking-tight text-text-primary sm:text-5xl lg:text-6xl bg-gradient-to-b from-text-primary to-text-secondary bg-clip-text text-transparent leading-[1.1]">
+    <div className="flex flex-col items-center gap-3 text-center animate-fade-in">
+      <h1 className="text-3xl font-bold tracking-tight text-text-primary sm:text-4xl lg:text-5xl leading-[1.15]">
         {content.headline}
       </h1>
-      <p className="max-w-xl text-base text-text-secondary leading-relaxed sm:text-lg">
+      <p className="max-w-lg text-base text-text-secondary leading-relaxed">
         {content.subtitle}
       </p>
     </div>
