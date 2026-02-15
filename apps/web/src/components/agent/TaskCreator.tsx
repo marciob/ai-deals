@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { TaskContract } from "@/types/task";
-import { CAPABILITIES } from "@/data/capabilities";
+import type { ProviderCapability } from "@/types/provider";
+import * as api from "@/lib/api";
 import { Textarea } from "@/components/ui/Textarea";
 import { Button } from "@/components/ui/Button";
 
@@ -12,9 +13,24 @@ interface TaskCreatorProps {
 
 export function TaskCreator({ onCreateTask }: TaskCreatorProps) {
   const [goal, setGoal] = useState("");
-  const [capability, setCapability] = useState(CAPABILITIES[0].id);
+  const [capabilities, setCapabilities] = useState<ProviderCapability[]>([]);
+  const [capability, setCapability] = useState("");
   const [urgent, setUrgent] = useState(false);
   const [maxBudget, setMaxBudget] = useState(25);
+
+  useEffect(() => {
+    api.fetchCapabilities().then((data) => {
+      const mapped: ProviderCapability[] = data.map((c) => ({
+        id: c.id,
+        name: c.name,
+        description: c.description,
+      }));
+      setCapabilities(mapped);
+      if (mapped.length > 0 && !capability) {
+        setCapability(mapped[0].id);
+      }
+    }).catch(() => {});
+  }, []);
 
   const handleSubmit = () => {
     if (!goal.trim()) return;
@@ -44,7 +60,7 @@ export function TaskCreator({ onCreateTask }: TaskCreatorProps) {
           Capability
         </span>
         <div className="flex gap-2">
-          {CAPABILITIES.map((cap) => (
+          {capabilities.map((cap) => (
             <button
               key={cap.id}
               onClick={() => setCapability(cap.id)}
@@ -102,7 +118,7 @@ export function TaskCreator({ onCreateTask }: TaskCreatorProps) {
         </div>
       </div>
 
-      <Button onClick={handleSubmit} disabled={!goal.trim()}>
+      <Button onClick={handleSubmit} disabled={!goal.trim() || !capability}>
         Create Task Contract
       </Button>
     </div>

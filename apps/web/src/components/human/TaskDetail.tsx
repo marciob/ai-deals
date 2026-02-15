@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { Task } from "@/types/task";
 import { Card } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -8,32 +9,46 @@ import { DecisionPanel } from "@/components/ui/DecisionPanel";
 import { ProofSubmission } from "./ProofSubmission";
 import { SLATimer } from "./SLATimer";
 import { formatCurrency } from "@/lib/formatting";
-import { useTask } from "@/hooks/useTask";
+import * as api from "@/lib/api";
 
 interface TaskDetailProps {
   task: Task;
+  onAction?: () => void;
 }
 
-export function TaskDetail({ task }: TaskDetailProps) {
-  const { dispatch } = useTask();
+export function TaskDetail({ task, onAction }: TaskDetailProps) {
   const deadline = task.createdAt + task.contract.slaSeconds * 1000;
+  const [busy, setBusy] = useState(false);
 
-  const handleAccept = () => {
-    if (task.status === "ACCEPTED") {
-      dispatch({ type: "TRANSITION", taskId: task.id, action: "START" });
+  const handleAccept = async () => {
+    setBusy(true);
+    try {
+      await api.acceptTask(task.id);
+      onAction?.();
+    } catch {
+      // TODO: show error toast
+    } finally {
+      setBusy(false);
     }
   };
 
-  const handleSubmitProof = (data: {
+  const handleSubmitProof = async (data: {
     confirmationCode: string;
     notes: string;
   }) => {
-    dispatch({
-      type: "TRANSITION",
-      taskId: task.id,
-      action: "SUBMIT_PROOF",
-      metadata: data,
-    });
+    setBusy(true);
+    try {
+      await api.submitProof(
+        task.id,
+        [{ type: "confirmation_code", label: "Confirmation", value: data.confirmationCode }],
+        data.notes
+      );
+      onAction?.();
+    } catch {
+      // TODO: show error toast
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -78,7 +93,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
         <DecisionPanel
           title="Start Working"
           description="Accept this task and begin work. The SLA timer is running."
-          confirmLabel="Start Task"
+          confirmLabel={busy ? "Starting..." : "Start Task"}
           onConfirm={handleAccept}
         />
       )}

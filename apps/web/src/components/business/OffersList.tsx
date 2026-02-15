@@ -1,16 +1,41 @@
 "use client";
 
-import { PROVIDERS } from "@/data/providers";
+import { useState, useEffect } from "react";
+import type { Provider } from "@/types/provider";
+import * as api from "@/lib/api";
+import { apiProviderToProvider } from "@/lib/mappers";
 import { Card } from "@/components/ui/Card";
 import { formatCurrency, truncateAddress } from "@/lib/formatting";
 
 export function OffersList() {
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api
+      .fetchProviders()
+      .then((data) => setProviders(data.map(apiProviderToProvider)))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col gap-3">
+        <h3 className="text-sm font-semibold text-text-primary">Your Offers</h3>
+        <Card className="flex items-center justify-center min-h-[200px]">
+          <p className="text-sm text-text-muted">Loading providers...</p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <h3 className="text-sm font-semibold text-text-primary">
         Your Offers
       </h3>
-      {PROVIDERS.map((provider) => (
+      {providers.map((provider) => (
         <Card key={provider.id} hover>
           <div className="flex items-start gap-4">
             {/* Avatar */}

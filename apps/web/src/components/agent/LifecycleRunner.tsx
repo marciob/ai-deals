@@ -5,8 +5,8 @@ import type { TaskContract } from "@/types/task";
 import type { Provider } from "@/types/provider";
 import { useTask } from "@/hooks/useTask";
 import { useLifecycleRunner } from "@/hooks/useLifecycleRunner";
-import { getProviders } from "@/services/mockProviderService";
-import { createTask } from "@/services/mockTaskService";
+import * as api from "@/lib/api";
+import { apiTaskToTask, apiProviderToProvider } from "@/lib/mappers";
 import { TaskCreator } from "./TaskCreator";
 import { TaskContractPreview } from "./TaskContractPreview";
 import { ProviderRanking } from "./ProviderRanking";
@@ -34,11 +34,23 @@ export function LifecycleRunner() {
 
   const handleCreateTask = useCallback(
     async (contract: TaskContract) => {
-      const task = await createTask(contract);
+      const apiTask = await api.createTask({
+        capability: contract.capability,
+        goal: contract.goal,
+        budgetAmount: contract.maxBudget,
+        slaSeconds: contract.slaSeconds,
+        urgent: contract.urgent,
+        currency: contract.currency,
+      });
+      const task = apiTaskToTask(apiTask);
       dispatch({ type: "ADD_TASK", task });
       setActiveTaskId(task.id);
 
-      const ranked = await getProviders(contract.capability, contract.urgent);
+      const apiProviders = await api.fetchProviders(
+        contract.capability,
+        contract.urgent
+      );
+      const ranked = apiProviders.map(apiProviderToProvider);
       setProviders(ranked);
 
       if (ranked.length > 0) {

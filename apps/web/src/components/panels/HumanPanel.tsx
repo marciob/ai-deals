@@ -1,23 +1,31 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useTask } from "@/hooks/useTask";
-import { SAMPLE_HUMAN_TASKS } from "@/data/sampleTasks";
+import { useState, useEffect } from "react";
+import type { Task } from "@/types/task";
+import * as api from "@/lib/api";
+import { apiTaskToTask } from "@/lib/mappers";
 import { TaskInbox } from "@/components/human/TaskInbox";
 import { TaskDetail } from "@/components/human/TaskDetail";
 
 export function HumanPanel() {
-  const { state, dispatch } = useTask();
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const seededRef = useRef(false);
+  const [loading, setLoading] = useState(true);
+
+  const loadTasks = async () => {
+    try {
+      const apiTasks = await api.fetchTasks();
+      setTasks(apiTasks.map(apiTaskToTask));
+    } catch {
+      // silently fail — tasks will be empty
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (seededRef.current) return;
-    seededRef.current = true;
-    for (const task of SAMPLE_HUMAN_TASKS) {
-      dispatch({ type: "ADD_TASK", task });
-    }
-  }, [dispatch]);
+    loadTasks();
+  }, []);
 
   const humanStatuses = new Set([
     "ACCEPTED",
@@ -25,22 +33,33 @@ export function HumanPanel() {
     "PROOF_SUBMITTED",
     "PROOF_REJECTED",
   ]);
-  const humanTasks = state.tasks.filter((t) => humanStatuses.has(t.status));
+  const humanTasks = tasks.filter((t) => humanStatuses.has(t.status));
   const selectedTask = selectedTaskId
-    ? state.tasks.find((t) => t.id === selectedTaskId) ?? null
+    ? tasks.find((t) => t.id === selectedTaskId) ?? null
     : null;
+
+  const handleTaskAction = async () => {
+    // Reload tasks after any action
+    await loadTasks();
+  };
 
   return (
     <section className="w-full max-w-5xl mx-auto px-4 animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TaskInbox
-          tasks={humanTasks}
-          onSelectTask={setSelectedTaskId}
-          selectedTaskId={selectedTaskId}
-        />
+        {loading ? (
+          <div className="card-elevated rounded-2xl flex items-center justify-center min-h-[200px]">
+            <p className="text-sm text-text-muted">Loading tasks...</p>
+          </div>
+        ) : (
+          <TaskInbox
+            tasks={humanTasks}
+            onSelectTask={setSelectedTaskId}
+            selectedTaskId={selectedTaskId}
+          />
+        )}
         <div>
           {selectedTask ? (
-            <TaskDetail task={selectedTask} />
+            <TaskDetail task={selectedTask} onAction={handleTaskAction} />
           ) : (
             <div className="card-elevated rounded-2xl flex items-center justify-center min-h-[300px]">
               <div className="flex flex-col items-center gap-3">

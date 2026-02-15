@@ -5,11 +5,11 @@ import type { TaskAction } from "@/types/task";
 import type { Provider } from "@/types/provider";
 import { useTask } from "./useTask";
 import { STEP_DURATIONS } from "@/lib/constants";
+import * as api from "@/lib/api";
+import { apiTaskToTask } from "@/lib/mappers";
 
 const LIFECYCLE_STEPS: TaskAction[] = [
-  "POST",
   "MATCH",
-  "ESCROW",
   "ACCEPT",
   "START",
   "SUBMIT_PROOF",
@@ -40,7 +40,7 @@ export function useLifecycleRunner(taskId: string, provider: Provider | null) {
   const cancelRef = useRef(false);
 
   const run = useCallback(async () => {
-    if (!provider) return;
+    if (!provider || !taskId) return;
     cancelRef.current = false;
 
     setState({
@@ -52,40 +52,71 @@ export function useLifecycleRunner(taskId: string, provider: Provider | null) {
       error: null,
     });
 
-    // Set provider and escrow before running
-    dispatch({ type: "SET_PROVIDER", taskId, providerId: provider.id });
-    dispatch({ type: "SET_ESCROW", taskId, amount: provider.price });
+    try {
+      for (let i = 0; i < LIFECYCLE_STEPS.length; i++) {
+        if (cancelRef.current) break;
 
-    for (let i = 0; i < LIFECYCLE_STEPS.length; i++) {
-      if (cancelRef.current) break;
+        const action = LIFECYCLE_STEPS[i];
+        setState((s) => ({ ...s, currentStep: i, currentAction: action }));
 
-      const action = LIFECYCLE_STEPS[i];
-      setState((s) => ({ ...s, currentStep: i, currentAction: action }));
+        // Visual delay for UX
+        const delay = STEP_DURATIONS[action] ?? 800;
+        await new Promise((r) => setTimeout(r, delay));
 
-      const delay = STEP_DURATIONS[action] ?? 800;
-      await new Promise((r) => setTimeout(r, delay));
+        if (cancelRef.current) break;
 
-      if (cancelRef.current) break;
+        // Call the real API for each step
+        switch (action) {
+          case "MATCH":
+            // match + escrow happen together in the API
+            await api.matchTask(taskId, provider.id);
+            break;
+          case "ACCEPT":
+            // accept + start happen together in the API
+            await api.acceptTask(taskId);
+            break;
+          case "START":
+            // Already handled by accept, just a visual step
+            break;
+          case "SUBMIT_PROOF":
+            await api.submitProof(
+              taskId,
+              [{ type: "auto", label: "Agent proof" }],
+              "Completed by autonomous agent"
+            );
+            break;
+          case "VERIFY":
+            // verify + pay + close happen together in the API
+            await api.verifyTask(taskId, true, "Auto-verified by agent");
+            break;
+          case "PAY":
+            // Already handled by verify
+            break;
+          case "CLOSE":
+            // Already handled by verify
+            break;
+        }
+      }
 
-      try {
-        dispatch({ type: "TRANSITION", taskId, action });
-      } catch (err) {
+      if (!cancelRef.current) {
+        // Fetch final task state and sync to context
+        const finalTask = await api.fetchTask(taskId);
+        const mapped = apiTaskToTask(finalTask);
+        dispatch({ type: "ADD_TASK", task: mapped });
+
         setState((s) => ({
           ...s,
           isRunning: false,
-          error: err instanceof Error ? err.message : "Unknown error",
+          currentStep: LIFECYCLE_STEPS.length,
+          currentAction: null,
+          completed: true,
         }));
-        return;
       }
-    }
-
-    if (!cancelRef.current) {
+    } catch (err) {
       setState((s) => ({
         ...s,
         isRunning: false,
-        currentStep: LIFECYCLE_STEPS.length,
-        currentAction: null,
-        completed: true,
+        error: err instanceof Error ? err.message : "Unknown error",
       }));
     }
   }, [taskId, provider, dispatch]);
