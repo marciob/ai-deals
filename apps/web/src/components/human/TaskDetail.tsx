@@ -49,14 +49,14 @@ export function TaskDetail({ task, onAction, walletAddress }: TaskDetailProps) {
   };
 
   const handleSubmitProof = async (data: {
-    confirmationCode: string;
     notes: string;
+    artifacts: { type: string; value: string }[];
   }) => {
     setBusy(true);
     try {
       await api.submitProof(
         task.id,
-        [{ type: "confirmation_code", label: "Confirmation", value: data.confirmationCode }],
+        data.artifacts,
         data.notes
       );
       onAction?.();
