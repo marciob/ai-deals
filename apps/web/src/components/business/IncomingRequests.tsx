@@ -98,7 +98,7 @@ export function IncomingRequests() {
               confirmLabel="Accept"
               rejectLabel="Decline"
               onConfirm={() => handleAccept(task.id)}
-              onReject={() => handleDecline(task.id)}
+              onReject={() => handleDecline()}
             />
           </div>
         </Card>
