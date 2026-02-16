@@ -100,7 +100,7 @@ export function Header() {
           <span className="text-xs font-bold text-white tracking-tight">AI</span>
         </div>
         <span className="text-sm font-semibold text-text-primary tracking-tight">
-          ai-deals
+          AIdeals
         </span>
       </div>
       <div className="flex items-center gap-3">
