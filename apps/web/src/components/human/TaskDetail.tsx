@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Task } from "@/types/task";
 import { Card } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { EscrowBadge } from "@/components/ui/EscrowBadge";
 import { EventTimeline } from "@/components/ui/EventTimeline";
 import { DecisionPanel } from "@/components/ui/DecisionPanel";
 import { ProofSubmission } from "./ProofSubmission";
@@ -82,6 +83,9 @@ export function TaskDetail({ task, onAction, walletAddress }: TaskDetailProps) {
                   task.contract.currency
                 )}
               </span>
+              {task.contract.maxBudget > 0 && (
+                <EscrowBadge funded={!!task.escrowTx} />
+              )}
             </div>
           </div>
           <div className="flex flex-col items-end gap-1 flex-shrink-0">

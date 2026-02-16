@@ -56,6 +56,7 @@ export interface Task {
   providerId?: string;
   claimedBy?: string;
   escrowAmount?: number;
+  escrowTx?: string;
   events: TaskEvent[];
   createdAt: number;
   updatedAt: number;

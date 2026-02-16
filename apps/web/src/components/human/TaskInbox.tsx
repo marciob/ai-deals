@@ -3,6 +3,7 @@
 import type { Task } from "@/types/task";
 import { Card } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { EscrowBadge } from "@/components/ui/EscrowBadge";
 import { SLATimer } from "./SLATimer";
 import { formatCurrency } from "@/lib/formatting";
 
@@ -81,6 +82,9 @@ export function TaskInbox({
                   <span className="text-[10px] text-text-muted">
                     {task.contract.capability}
                   </span>
+                  {task.contract.maxBudget > 0 && (
+                    <EscrowBadge funded={!!task.escrowTx} />
+                  )}
                   {task.contract.urgent && (
                     <span className="text-[10px] font-semibold text-status-proof-submitted bg-status-proof-submitted/8 px-1.5 py-0.5 rounded">
                       URGENT

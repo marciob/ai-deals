@@ -6,6 +6,7 @@ import * as api from "@/lib/api";
 import { apiTaskToTask } from "@/lib/mappers";
 import { Card } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { EscrowBadge } from "@/components/ui/EscrowBadge";
 import { DecisionPanel } from "@/components/ui/DecisionPanel";
 import { formatCurrency } from "@/lib/formatting";
 
@@ -81,8 +82,11 @@ export function IncomingRequests() {
                 <p className="text-sm font-medium text-text-primary leading-snug">
                   {task.contract.goal}
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <StatusBadge status={task.status} />
+                  {task.contract.maxBudget > 0 && (
+                    <EscrowBadge funded={!!task.escrowTx} />
+                  )}
                   <span className="text-[11px] text-text-muted font-mono">
                     {task.contract.capability}
                   </span>

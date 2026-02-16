@@ -22,6 +22,7 @@ export function apiTaskToTask(t: ApiTask | ApiTaskDetail): Task {
     providerId: t.provider_id ?? undefined,
     claimedBy: t.claimed_by ?? undefined,
     escrowAmount: t.budget_amount,
+    escrowTx: t.escrow_tx ?? undefined,
     events,
     createdAt: new Date(t.created_at).getTime(),
     updatedAt: new Date(t.updated_at).getTime(),
