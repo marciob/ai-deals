@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { ok, created, badRequest, serverError } from "@/lib/apiResponse";
 import { computeTaskHash } from "@/lib/taskHash";
+import { getServerWalletAddress } from "@/lib/chain";
 
 export async function GET(req: NextRequest) {
   try {
@@ -79,7 +80,15 @@ export async function POST(req: NextRequest) {
       },
     ]);
 
-    return created(task);
+    // Include server wallet so agents know where to send MON for escrow funding
+    let serverWallet: string | null = null;
+    try {
+      serverWallet = getServerWalletAddress();
+    } catch {
+      // SERVER_PRIVATE_KEY not set — serverWallet stays null
+    }
+
+    return created({ ...task, serverWallet });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : "Internal server error");
   }

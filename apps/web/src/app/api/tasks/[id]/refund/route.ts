@@ -2,7 +2,8 @@ import { type NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { ok, notFound, conflict, serverError } from "@/lib/apiResponse";
 import { transition } from "@/lib/stateMachine";
-import { refundEscrow, escrowExists } from "@/lib/chain";
+import { refundEscrow, escrowExists, sendMON, getEscrow } from "@/lib/chain";
+import { getAddress, type Address } from "viem";
 import type { TaskStatus, TaskAction } from "@/types/task";
 
 export async function POST(
@@ -57,10 +58,21 @@ export async function POST(
 
     // On-chain refund if task has budget
     let refundTx: string | null = null;
+    let forwardTx: string | null = null;
     if (task.budget_amount > 0) {
       const hasEscrow = await escrowExists(id);
       if (hasEscrow) {
+        // Get escrow amount before refund (refund sends MON to server wallet)
+        const escrow = await getEscrow(id);
+        const escrowAmount = escrow.amount;
+
         refundTx = await refundEscrow(id);
+
+        // Forward refund to the original requester if address is known
+        if (task.requester_address) {
+          const requesterAddr = getAddress(task.requester_address) as Address;
+          forwardTx = await sendMON(requesterAddr, escrowAmount);
+        }
       }
     }
 
@@ -82,10 +94,11 @@ export async function POST(
         from_status: s.from,
         to_status: s.to,
         tx_hash: s.action === "REFUND" ? refundTx : null,
+        metadata: s.action === "REFUND" && forwardTx ? { forwardTx } : null,
       }))
     );
 
-    return ok({ id, status, refundTx });
+    return ok({ id, status, refundTx, forwardTx });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : "Internal server error");
   }

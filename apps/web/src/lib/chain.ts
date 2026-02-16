@@ -113,6 +113,75 @@ export async function refundEscrow(taskId: string): Promise<Hash> {
   return hash;
 }
 
+// ── Server wallet address ────────────────────────────────────
+
+export function getServerWalletAddress(): Address {
+  const pk = process.env.SERVER_PRIVATE_KEY?.trim();
+  if (!pk) throw new Error("SERVER_PRIVATE_KEY not set");
+  return privateKeyToAccount(pk as `0x${string}`).address;
+}
+
+// ── Server-side escrow creation ──────────────────────────────
+
+export async function createServerEscrow(
+  taskId: string,
+  taskHash: `0x${string}`,
+  amountWei: bigint
+): Promise<Hash> {
+  const wallet = getServerWallet();
+  const hash = await wallet.writeContract({
+    address: escrowAddress,
+    abi: TaskEscrowABI,
+    functionName: "createEscrow",
+    args: [taskIdToBytes32(taskId), taskHash],
+    value: amountWei,
+  });
+  await publicClient.waitForTransactionReceipt({ hash });
+  return hash;
+}
+
+// ── Deposit verification ─────────────────────────────────────
+
+export async function verifyDeposit(
+  txHash: Hash,
+  expectedAmountWei: bigint
+): Promise<{ valid: boolean; from: Address }> {
+  const serverAddr = getServerWalletAddress();
+
+  const receipt = await publicClient.getTransactionReceipt({ hash: txHash });
+  if (receipt.status !== "success") {
+    return { valid: false, from: "0x0000000000000000000000000000000000000000" };
+  }
+
+  const tx = await publicClient.getTransaction({ hash: txHash });
+  const toAddr = tx.to ? getAddress(tx.to) : null;
+
+  if (toAddr !== getAddress(serverAddr)) {
+    return { valid: false, from: getAddress(tx.from) };
+  }
+
+  if (tx.value < expectedAmountWei) {
+    return { valid: false, from: getAddress(tx.from) };
+  }
+
+  return { valid: true, from: getAddress(tx.from) };
+}
+
+// ── Server wallet send (for forwarding refunds) ──────────────
+
+export async function sendMON(
+  to: Address,
+  amountWei: bigint
+): Promise<Hash> {
+  const wallet = getServerWallet();
+  const hash = await wallet.sendTransaction({
+    to,
+    value: amountWei,
+  });
+  await publicClient.waitForTransactionReceipt({ hash });
+  return hash;
+}
+
 // ── Contract address export (for frontend hooks) ────────────
 
 export const TASK_ESCROW_ADDRESS = escrowAddress;

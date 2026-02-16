@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { ok, badRequest, notFound, conflict, serverError } from "@/lib/apiResponse";
 import { transition } from "@/lib/stateMachine";
+import { escrowExists } from "@/lib/chain";
 import type { TaskStatus, TaskAction } from "@/types/task";
 
 export async function POST(
@@ -25,6 +26,14 @@ export async function POST(
     // Only human-targeted tasks can be claimed
     if (task.target !== "human") {
       return conflict("Only human-targeted tasks can be claimed");
+    }
+
+    // Paid tasks require escrow to be funded before claiming
+    if (task.budget_amount > 0) {
+      const hasEscrow = await escrowExists(id);
+      if (!hasEscrow) {
+        return conflict("Escrow not funded — task cannot be claimed yet");
+      }
     }
 
     // Validate state transition: POSTED → IN_PROGRESS via CLAIM

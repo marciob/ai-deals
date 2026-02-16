@@ -211,6 +211,13 @@ export function refundTask(id: string) {
   });
 }
 
+export function fundEscrow(id: string, depositTxHash: string) {
+  return request<{ id: string; status: string; escrowTx: string }>(
+    `/tasks/${id}/fund`,
+    { method: "POST", body: JSON.stringify({ depositTxHash }) }
+  );
+}
+
 export function recordEscrowTx(id: string, txHash: string) {
   return request<{ id: string; escrowTx: string }>(`/tasks/${id}/escrow-tx`, {
     method: "POST",
