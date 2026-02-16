@@ -25,11 +25,26 @@ export function fetchCapabilities() {
   return request<ApiCapability[]>("/capabilities");
 }
 
+export function createCapability(body: {
+  name: string;
+  description: string;
+  inputsSchema?: Record<string, unknown>;
+  proofPolicy?: string;
+}) {
+  return request<ApiCapability>("/capabilities", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
 // ── Providers ───────────────────────────────────────────────
 
 export interface ApiProvider {
   id: string;
   name: string;
+  business_name: string;
+  description: string;
+  ai_instructions: string;
   wallet_address: string;
   type: string;
   capability_ids: string[];
@@ -60,13 +75,14 @@ export interface ApiTask {
   currency: string;
   sla_seconds: number;
   urgent: boolean;
-  min_stake: number;
   task_hash: string;
   provider_id: string | null;
   escrow_tx: string | null;
   payout_tx: string | null;
   refund_tx: string | null;
   requester_address: string | null;
+  claimed_by: string | null;
+  target: "human" | "business";
   created_at: string;
   updated_at: string;
 }
@@ -98,9 +114,12 @@ export interface ApiTaskDetail extends ApiTask {
   proof: ApiProof | null;
 }
 
-export function fetchTasks(status?: string) {
-  const qs = status ? `?status=${status}` : "";
-  return request<ApiTask[]>(`/tasks${qs}`);
+export function fetchTasks(status?: string, target?: string) {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (target) params.set("target", target);
+  const qs = params.toString();
+  return request<ApiTask[]>(`/tasks${qs ? `?${qs}` : ""}`);
 }
 
 export function fetchTask(id: string) {
@@ -115,8 +134,32 @@ export function createTask(body: {
   urgent?: boolean;
   currency?: string;
   requesterAddress?: string;
+  target?: "human" | "business";
 }) {
   return request<ApiTask>("/tasks", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function claimTask(id: string, walletAddress: string) {
+  return request<{ id: string; status: string; claimedBy: string }>(
+    `/tasks/${id}/claim`,
+    { method: "POST", body: JSON.stringify({ walletAddress }) }
+  );
+}
+
+export function createProvider(body: {
+  name: string;
+  businessName?: string;
+  description?: string;
+  aiInstructions?: string;
+  walletAddress: string;
+  capabilityIds?: string[];
+  price?: number;
+  etaMinutes?: number;
+}) {
+  return request<ApiProvider>("/providers", {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -165,6 +208,13 @@ export function refundTask(id: string) {
   return request<{ id: string; status: string }>(`/tasks/${id}/refund`, {
     method: "POST",
     body: JSON.stringify({}),
+  });
+}
+
+export function recordEscrowTx(id: string, txHash: string) {
+  return request<{ id: string; escrowTx: string }>(`/tasks/${id}/escrow-tx`, {
+    method: "POST",
+    body: JSON.stringify({ txHash }),
   });
 }
 

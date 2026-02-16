@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { TaskContract } from "@/types/task";
 import type { Provider } from "@/types/provider";
 import { useTask } from "@/hooks/useTask";
 import { useWalletAddress } from "@/hooks/useWalletAddress";
 import { useLifecycleRunner } from "@/hooks/useLifecycleRunner";
+import { useCreateEscrow } from "@/hooks/useCreateEscrow";
 import * as api from "@/lib/api";
 import { apiTaskToTask, apiProviderToProvider } from "@/lib/mappers";
 import { TaskCreator } from "./TaskCreator";
@@ -20,12 +21,14 @@ export function LifecycleRunner() {
   const address = useWalletAddress();
   const { state, dispatch } = useTask();
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
+  const [taskHash, setTaskHash] = useState<`0x${string}` | null>(null);
+  const [budgetAmount, setBudgetAmount] = useState<number>(0);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(
     null
   );
   const [phase, setPhase] = useState<
-    "create" | "providers" | "running" | "complete"
+    "create" | "escrow" | "providers" | "running" | "complete"
   >("create");
 
   const activeTask = activeTaskId
@@ -33,6 +36,16 @@ export function LifecycleRunner() {
     : null;
 
   const lifecycle = useLifecycleRunner(activeTaskId ?? "", selectedProvider);
+  const escrow = useCreateEscrow();
+
+  // After escrow tx confirms, record it and move to providers
+  useEffect(() => {
+    if (escrow.isSuccess && escrow.txHash && activeTaskId) {
+      api.recordEscrowTx(activeTaskId, escrow.txHash).then(() => {
+        setPhase("providers");
+      });
+    }
+  }, [escrow.isSuccess, escrow.txHash, activeTaskId]);
 
   const handleCreateTask = useCallback(
     async (contract: TaskContract) => {
@@ -48,6 +61,8 @@ export function LifecycleRunner() {
       const task = apiTaskToTask(apiTask);
       dispatch({ type: "ADD_TASK", task });
       setActiveTaskId(task.id);
+      setTaskHash(apiTask.task_hash as `0x${string}`);
+      setBudgetAmount(contract.maxBudget);
 
       const apiProviders = await api.fetchProviders(
         contract.capability,
@@ -59,10 +74,25 @@ export function LifecycleRunner() {
       if (ranked.length > 0) {
         setSelectedProvider(ranked[0]);
       }
-      setPhase("providers");
+
+      // If budget > 0 and wallet connected, show escrow phase
+      if (contract.maxBudget > 0 && address) {
+        setPhase("escrow");
+      } else {
+        setPhase("providers");
+      }
     },
     [dispatch, address]
   );
+
+  const handleLockEscrow = useCallback(() => {
+    if (!activeTaskId || !taskHash) return;
+    escrow.createEscrow(activeTaskId, taskHash, String(budgetAmount));
+  }, [activeTaskId, taskHash, budgetAmount, escrow]);
+
+  const handleSkipEscrow = useCallback(() => {
+    setPhase("providers");
+  }, []);
 
   const handleRunAgent = useCallback(async () => {
     if (!activeTaskId || !selectedProvider) return;
@@ -73,6 +103,8 @@ export function LifecycleRunner() {
 
   const handleReset = useCallback(() => {
     setActiveTaskId(null);
+    setTaskHash(null);
+    setBudgetAmount(0);
     setProviders([]);
     setSelectedProvider(null);
     setPhase("create");
@@ -89,6 +121,35 @@ export function LifecycleRunner() {
                 Define Task
               </h3>
               <TaskCreator onCreateTask={handleCreateTask} />
+            </Card>
+          )}
+
+          {phase === "escrow" && (
+            <Card glow className="animate-fade-in">
+              <h3 className="text-sm font-semibold text-text-primary mb-3">
+                Lock Escrow
+              </h3>
+              <p className="text-xs text-text-secondary leading-relaxed mb-4">
+                Lock <span className="font-mono font-medium text-text-primary">{budgetAmount} MON</span> into
+                the on-chain escrow contract. Funds will be released to the provider
+                upon successful verification, or refunded if the SLA expires.
+              </p>
+              {escrow.error && (
+                <p className="text-xs text-status-timed-out mb-3">
+                  {escrow.error.message}
+                </p>
+              )}
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleLockEscrow}
+                  disabled={escrow.isPending}
+                >
+                  {escrow.isPending ? "Confirming..." : "Lock Escrow"}
+                </Button>
+                <Button variant="secondary" onClick={handleSkipEscrow}>
+                  Skip
+                </Button>
+              </div>
             </Card>
           )}
 

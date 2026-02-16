@@ -11,10 +11,6 @@ import "@rainbow-me/rainbowkit/styles.css";
 const queryClient = new QueryClient();
 
 export function WalletProvider({ children }: { children: ReactNode }) {
-  if (!wagmiConfig) {
-    return <>{children}</>;
-  }
-
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>

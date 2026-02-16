@@ -7,11 +7,15 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
     const status = searchParams.get("status");
+    const target = searchParams.get("target");
 
     let query = supabase.from("tasks").select("*").order("created_at", { ascending: false });
 
     if (status) {
       query = query.eq("status", status);
+    }
+    if (target) {
+      query = query.eq("target", target);
     }
 
     const { data, error } = await query;
@@ -27,11 +31,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json().catch(() => null);
     if (!body) return badRequest("Invalid JSON body");
 
-    const { capability, goal, budgetAmount, slaSeconds, urgent, requesterAddress } = body;
+    const { capability, goal, budgetAmount, slaSeconds, urgent, requesterAddress, target } = body;
 
     if (!capability || !goal) {
       return badRequest("capability and goal are required");
     }
+
+    const validTargets = ["human", "business"];
+    const taskTarget = validTargets.includes(target) ? target : "human";
 
     const taskHash = computeTaskHash({
       capability,
@@ -41,9 +48,6 @@ export async function POST(req: NextRequest) {
       slaSeconds: slaSeconds ?? 3600,
       urgent: urgent ?? false,
     });
-
-    // Compute minStake as 2x budget (simple heuristic)
-    const minStake = (budgetAmount ?? 0) * 2;
 
     // Insert as DRAFT then auto-transition to POSTED
     const { data: task, error: insertErr } = await supabase
@@ -56,9 +60,9 @@ export async function POST(req: NextRequest) {
         currency: body.currency ?? "MON",
         sla_seconds: slaSeconds ?? 3600,
         urgent: urgent ?? false,
-        min_stake: minStake,
         task_hash: taskHash,
         requester_address: requesterAddress ?? null,
+        target: taskTarget,
       })
       .select()
       .single();

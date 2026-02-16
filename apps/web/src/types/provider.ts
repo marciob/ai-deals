@@ -7,6 +7,9 @@ export interface ProviderCapability {
 export interface Provider {
   id: string;
   name: string;
+  businessName: string;
+  description: string;
+  aiInstructions: string;
   capabilities: string[];
   price: number;
   currency: string;

@@ -1,7 +1,8 @@
 import { type NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { ok, badRequest, notFound, conflict, serverError } from "@/lib/apiResponse";
+import { ok, notFound, conflict, serverError } from "@/lib/apiResponse";
 import { transition } from "@/lib/stateMachine";
+import { releaseEscrow, escrowExists } from "@/lib/chain";
 import type { TaskStatus, TaskAction } from "@/types/task";
 
 export async function POST(
@@ -47,12 +48,43 @@ export async function POST(
         })
         .eq("task_id", id);
 
+      // On-chain release if task has budget
+      let payoutTx: string | null = null;
+      if (task.budget_amount > 0) {
+        const hasEscrow = await escrowExists(id);
+        if (hasEscrow) {
+          // Load provider wallet address
+          const { data: provider } = await supabase
+            .from("providers")
+            .select("wallet_address")
+            .eq("id", task.provider_id)
+            .single();
+
+          if (!provider?.wallet_address) {
+            return serverError("Provider wallet address not found");
+          }
+
+          // Get proof hash from proofs table
+          const { data: proof } = await supabase
+            .from("proofs")
+            .select("proof_hash")
+            .eq("task_id", id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+          const proofHash = (proof?.proof_hash ?? "0x" + "0".repeat(64)) as `0x${string}`;
+
+          payoutTx = await releaseEscrow(id, provider.wallet_address, proofHash);
+        }
+      }
+
       // Update task to final status
       const { error: updateErr } = await supabase
         .from("tasks")
         .update({
           status,
-          payout_tx: body?.payoutTx ?? null,
+          payout_tx: payoutTx,
           updated_at: new Date().toISOString(),
         })
         .eq("id", id);
@@ -66,11 +98,11 @@ export async function POST(
           action: s.action,
           from_status: s.from,
           to_status: s.to,
-          tx_hash: s.action === "PAY" ? (body?.payoutTx ?? null) : null,
+          tx_hash: s.action === "PAY" ? payoutTx : null,
         }))
       );
 
-      return ok({ id, status });
+      return ok({ id, status, payoutTx });
     } else {
       // Reject: PROOF_SUBMITTED → PROOF_REJECTED
       let nextStatus: TaskStatus;

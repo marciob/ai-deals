@@ -30,7 +30,7 @@ export function TaskCreator({ onCreateTask }: TaskCreatorProps) {
         setCapability(mapped[0].id);
       }
     }).catch(() => {});
-  }, []);
+  }, [capability]);
 
   const handleSubmit = () => {
     if (!goal.trim()) return;

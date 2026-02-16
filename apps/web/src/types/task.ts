@@ -16,6 +16,7 @@ export type TaskStatus =
 export type TaskAction =
   | "POST"
   | "MATCH"
+  | "CLAIM"
   | "ESCROW"
   | "ACCEPT"
   | "START"
@@ -51,7 +52,9 @@ export interface Task {
   id: string;
   status: TaskStatus;
   contract: TaskContract;
+  target: "human" | "business";
   providerId?: string;
+  claimedBy?: string;
   escrowAmount?: number;
   events: TaskEvent[];
   createdAt: number;

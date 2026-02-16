@@ -15,7 +15,7 @@ export function IncomingRequests() {
 
   const loadRequests = async () => {
     try {
-      const tasks = await api.fetchTasks("POSTED");
+      const tasks = await api.fetchTasks("POSTED", "business");
       setRequests(tasks.map(apiTaskToTask));
     } catch {
       // silently fail
@@ -42,7 +42,7 @@ export function IncomingRequests() {
     }
   };
 
-  const handleDecline = async (_taskId: string) => {
+  const handleDecline = async () => {
     // No decline API yet — just remove from view
     await loadRequests();
   };

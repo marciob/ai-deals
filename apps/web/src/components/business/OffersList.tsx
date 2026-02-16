@@ -55,12 +55,27 @@ export function OffersList() {
                   Active
                 </span>
               </div>
+              {provider.businessName && (
+                <span className="text-[11px] text-text-secondary">
+                  {provider.businessName}
+                </span>
+              )}
               <span className="text-[11px] text-text-muted font-mono">
                 {truncateAddress(provider.address)}
               </span>
 
+              {provider.description && (
+                <p className="mt-2 text-xs text-text-secondary leading-relaxed line-clamp-2">
+                  {provider.description}
+                </p>
+              )}
+
               <div className="mt-3 grid grid-cols-4 gap-3">
-                <MiniStat label="Price" value={formatCurrency(provider.price)} />
+                <MiniStat
+                  label="Price"
+                  value={provider.price === 0 ? "Free" : formatCurrency(provider.price)}
+                  highlight={provider.price === 0}
+                />
                 <MiniStat label="ETA" value={`${provider.etaMinutes}m`} />
                 <MiniStat label="Stake" value={formatCurrency(provider.stakeAmount)} />
                 <MiniStat label="Success" value={`${(provider.successRate * 100).toFixed(0)}%`} />
@@ -73,11 +88,11 @@ export function OffersList() {
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string }) {
+function MiniStat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-[10px] text-text-muted">{label}</span>
-      <span className="text-xs font-medium text-text-secondary font-mono">
+      <span className={`text-xs font-medium font-mono ${highlight ? "text-status-verified" : "text-text-secondary"}`}>
         {value}
       </span>
     </div>

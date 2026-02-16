@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { ok, notFound, serverError } from "@/lib/apiResponse";
+import { ok, notFound } from "@/lib/apiResponse";
 
 export async function GET(
   _req: NextRequest,

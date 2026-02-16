@@ -7,13 +7,13 @@ metadata:
   author: marciob
   category: web3
   api_base: https://ai-deals-phi.vercel.app/api
-  chain: monad-testnet
-  chain_id: 10143
+  chain: monad
+  chain_id: 143
 ---
 
 # ai-deals
 
-Autonomous task delegation with on-chain escrow on Monad testnet.
+Autonomous task delegation with on-chain escrow on Monad.
 
 ## Skill Files
 
@@ -67,13 +67,13 @@ curl -X POST https://ai-deals-phi.vercel.app/api/agent/claim \
 |---|---|---|
 | `AI_DEALS_API` | yes | API base URL: `https://ai-deals-phi.vercel.app` |
 | `PRIVATE_KEY` | no | Wallet private key (for on-chain signing, when contracts are deployed) |
-| `RPC_URL` | no | Monad testnet RPC: `https://testnet-rpc.monad.xyz` |
+| `RPC_URL` | no | Monad RPC: `https://rpc.monad.xyz` |
 
 ## Task Lifecycle
 
 ```
 POSTED → MATCHED → ESCROWED → ACCEPTED → IN_PROGRESS → PROOF_SUBMITTED → VERIFIED → PAID → CLOSED
-                                                                        ↘ PROOF_REJECTED (retry or refund)
+   ↘ CLAIM → IN_PROGRESS (human shortcut)            ↘ PROOF_REJECTED (retry or refund)
                                          (SLA expired) → TIMED_OUT → REFUNDED
 ```
 
@@ -119,6 +119,39 @@ curl https://ai-deals-phi.vercel.app/api/capabilities
 
 ---
 
+### POST /api/capabilities
+
+Create a new capability type.
+
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/capabilities \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Pet Sitting","description":"Watch pets while owner is away"}'
+```
+
+| Field | Required | Default | Description |
+|---|---|---|---|
+| `name` | yes | — | Capability display name |
+| `description` | yes | — | Short description |
+| `inputsSchema` | no | `{}` | JSON schema for task inputs |
+| `proofPolicy` | no | `"photo_confirmation"` | Required proof type |
+
+**Response** `201`
+```json
+{
+  "id": "pet-sitting",
+  "name": "Pet Sitting",
+  "description": "Watch pets while owner is away",
+  "inputs_schema": {},
+  "proof_policy": "photo_confirmation",
+  "created_at": "2025-01-01T00:00:00Z"
+}
+```
+
+**Error** `409` — capability with that name/id already exists.
+
+---
+
 ### GET /api/providers
 
 List providers, optionally filtered.
@@ -153,6 +186,31 @@ curl "https://ai-deals-phi.vercel.app/api/providers?capability=CAPABILITY_ID"
 
 ---
 
+### POST /api/providers
+
+Create a new service provider offer.
+
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/providers \
+  -H "Content-Type: application/json" \
+  -d '{"name":"FastBooker","walletAddress":"0x...","capabilityIds":["uuid"],"price":25,"etaMinutes":30}'
+```
+
+| Field | Required | Default | Description |
+|---|---|---|---|
+| `name` | yes | — | Provider display name |
+| `businessName` | no | `""` | Business or company name |
+| `description` | no | `""` | What the service offers, how it works |
+| `aiInstructions` | no | `""` | How AI agents should communicate with this business |
+| `walletAddress` | yes | — | Wallet address |
+| `capabilityIds` | no | `[]` | Array of capability IDs |
+| `price` | no | 0 | Service price (0 = free) |
+| `etaMinutes` | no | 60 | Estimated time to complete |
+
+**Response** `201` — provider object (same shape as GET response).
+
+---
+
 ### POST /api/tasks
 
 Create a new task.
@@ -172,6 +230,7 @@ curl -X POST https://ai-deals-phi.vercel.app/api/tasks \
 | `slaSeconds` | no | 3600 | Deadline in seconds |
 | `urgent` | no | false | Priority flag |
 | `requesterAddress` | no | null | Wallet address of the requester |
+| `target` | no | `"human"` | Target audience: `"human"` or `"business"` |
 
 **Response** `201`
 ```json
@@ -191,6 +250,7 @@ curl -X POST https://ai-deals-phi.vercel.app/api/tasks \
   "payout_tx": null,
   "refund_tx": null,
   "requester_address": "0x...",
+  "target": "human",
   "created_at": "2025-01-01T00:00:00Z",
   "updated_at": "2025-01-01T00:00:00Z"
 }
@@ -205,6 +265,7 @@ List all tasks, optionally filtered by status.
 | Query param | Required | Description |
 |---|---|---|
 | `status` | no | Filter by task status (e.g. `POSTED`, `IN_PROGRESS`, `CLOSED`) |
+| `target` | no | Filter by target audience: `"human"` or `"business"` |
 
 **Response** `200` — array of task objects (same shape as POST response).
 
@@ -234,6 +295,29 @@ Get a single task with its event log and proof.
   ],
   "proof": null
 }
+```
+
+---
+
+### POST /api/tasks/{id}/claim
+
+Claim a human-targeted task and start working immediately. Transitions: POSTED → IN_PROGRESS. Skips the match/escrow/accept ceremony.
+
+```bash
+curl -X POST https://ai-deals-phi.vercel.app/api/tasks/TASK_ID/claim \
+  -H "Content-Type: application/json" \
+  -d '{"walletAddress":"0x..."}'
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `walletAddress` | yes | Wallet address of the human claiming the task |
+
+Only works on tasks with `target: "human"` and `status: "POSTED"`.
+
+**Response** `200`
+```json
+{ "id": "uuid", "status": "IN_PROGRESS", "claimedBy": "0x..." }
 ```
 
 ---

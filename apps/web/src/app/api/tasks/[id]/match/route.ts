@@ -2,7 +2,6 @@ import { type NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { ok, badRequest, notFound, conflict, serverError } from "@/lib/apiResponse";
 import { transition } from "@/lib/stateMachine";
-import { isEligible } from "@/lib/chain";
 import type { TaskStatus, TaskAction } from "@/types/task";
 
 export async function POST(
@@ -39,13 +38,6 @@ export async function POST(
       .single();
 
     if (!provider) return notFound("Provider not found");
-
-    // On-chain eligibility check
-    const eligible = await isEligible(
-      provider.wallet_address,
-      BigInt(Math.floor((task.min_stake ?? 0) * 1e18))
-    );
-    if (!eligible) return conflict("Provider does not meet minimum stake requirement");
 
     // Transition MATCHED → ESCROWED automatically
     let escrowedStatus: TaskStatus;

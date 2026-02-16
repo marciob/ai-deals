@@ -9,16 +9,31 @@ import { DecisionPanel } from "@/components/ui/DecisionPanel";
 import { ProofSubmission } from "./ProofSubmission";
 import { SLATimer } from "./SLATimer";
 import { formatCurrency } from "@/lib/formatting";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import * as api from "@/lib/api";
 
 interface TaskDetailProps {
   task: Task;
-  onAction?: () => void;
+  onAction?: (action?: string) => void;
+  walletAddress?: string;
 }
 
-export function TaskDetail({ task, onAction }: TaskDetailProps) {
+export function TaskDetail({ task, onAction, walletAddress }: TaskDetailProps) {
   const deadline = task.createdAt + task.contract.slaSeconds * 1000;
   const [busy, setBusy] = useState(false);
+
+  const handleClaim = async () => {
+    if (!walletAddress) return;
+    setBusy(true);
+    try {
+      await api.claimTask(task.id, walletAddress);
+      onAction?.("claim");
+    } catch {
+      // TODO: show error toast
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleAccept = async () => {
     setBusy(true);
@@ -88,6 +103,41 @@ export function TaskDetail({ task, onAction }: TaskDetailProps) {
           )}
         </div>
       </Card>
+
+      {task.status === "POSTED" && walletAddress && (
+        <DecisionPanel
+          title="Claim This Task"
+          description={`Claim to start working immediately. Budget: ${formatCurrency(task.contract.maxBudget, task.contract.currency)} · SLA: ${task.contract.slaSeconds / 60}m`}
+          confirmLabel={busy ? "Claiming..." : "Claim Task"}
+          onConfirm={handleClaim}
+          loading={busy}
+        />
+      )}
+
+      {task.status === "POSTED" && !walletAddress && (
+        <Card>
+          <div className="flex flex-col gap-3">
+            <h4 className="text-sm font-semibold text-text-primary">
+              Connect Wallet to Claim
+            </h4>
+            <p className="text-xs text-text-secondary leading-relaxed">
+              {`Budget: ${formatCurrency(task.contract.maxBudget, task.contract.currency)} · SLA: ${task.contract.slaSeconds / 60}m`}
+            </p>
+            <ConnectButton.Custom>
+              {({ openConnectModal, mounted }) => (
+                <button
+                  type="button"
+                  onClick={openConnectModal}
+                  disabled={!mounted}
+                  className="cursor-pointer self-start rounded-full bg-accent px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-accent/90 disabled:opacity-50"
+                >
+                  Connect Wallet
+                </button>
+              )}
+            </ConnectButton.Custom>
+          </div>
+        </Card>
+      )}
 
       {task.status === "ACCEPTED" && (
         <DecisionPanel

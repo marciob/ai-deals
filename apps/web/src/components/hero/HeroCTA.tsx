@@ -17,9 +17,6 @@ export function HeroCTA({ onAction }: HeroCTAProps) {
       <Button size="lg" onClick={onAction}>
         {content.cta}
       </Button>
-      <Button variant="secondary" size="lg" onClick={onAction}>
-        Learn more
-      </Button>
     </div>
   );
 }

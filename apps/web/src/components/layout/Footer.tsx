@@ -6,7 +6,7 @@ export function Footer() {
           ai-deals — Autonomous Task Marketplace
         </span>
         <span className="text-[10px] text-text-muted font-mono">
-          v0.1.0-mvp
+          v0.1.0
         </span>
       </div>
     </footer>

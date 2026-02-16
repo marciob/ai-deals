@@ -3,7 +3,7 @@ import type { TaskStatus, TaskAction } from "@/types/task";
 const TRANSITIONS: Record<TaskStatus, Partial<Record<TaskAction, TaskStatus>>> =
   {
     DRAFT: { POST: "POSTED" },
-    POSTED: { MATCH: "MATCHED" },
+    POSTED: { MATCH: "MATCHED", CLAIM: "IN_PROGRESS" },
     MATCHED: { ESCROW: "ESCROWED" },
     ESCROWED: { ACCEPT: "ACCEPTED" },
     ACCEPTED: { START: "IN_PROGRESS" },

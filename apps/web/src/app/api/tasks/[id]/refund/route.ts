@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { ok, notFound, conflict, serverError } from "@/lib/apiResponse";
 import { transition } from "@/lib/stateMachine";
+import { refundEscrow, escrowExists } from "@/lib/chain";
 import type { TaskStatus, TaskAction } from "@/types/task";
 
 export async function POST(
@@ -54,9 +55,22 @@ export async function POST(
       return conflict(`Cannot refund from status ${status}`);
     }
 
+    // On-chain refund if task has budget
+    let refundTx: string | null = null;
+    if (task.budget_amount > 0) {
+      const hasEscrow = await escrowExists(id);
+      if (hasEscrow) {
+        refundTx = await refundEscrow(id);
+      }
+    }
+
     const { error: updateErr } = await supabase
       .from("tasks")
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({
+        status,
+        refund_tx: refundTx,
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", id);
 
     if (updateErr) return serverError(updateErr.message);
@@ -67,10 +81,11 @@ export async function POST(
         action: s.action,
         from_status: s.from,
         to_status: s.to,
+        tx_hash: s.action === "REFUND" ? refundTx : null,
       }))
     );
 
-    return ok({ id, status });
+    return ok({ id, status, refundTx });
   } catch (err) {
     return serverError(err instanceof Error ? err.message : "Internal server error");
   }

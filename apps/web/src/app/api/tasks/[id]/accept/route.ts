@@ -2,7 +2,6 @@ import { type NextRequest } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { ok, notFound, conflict, serverError } from "@/lib/apiResponse";
 import { transition } from "@/lib/stateMachine";
-import { isEligible } from "@/lib/chain";
 import type { TaskStatus, TaskAction } from "@/types/task";
 
 export async function POST(
@@ -26,23 +25,6 @@ export async function POST(
       acceptedStatus = transition(task.status as TaskStatus, "ACCEPT" as TaskAction);
     } catch {
       return conflict(`Cannot accept from status ${task.status}`);
-    }
-
-    // Re-check provider eligibility
-    if (task.provider_id) {
-      const { data: provider } = await supabase
-        .from("providers")
-        .select("wallet_address")
-        .eq("id", task.provider_id)
-        .single();
-
-      if (provider) {
-        const eligible = await isEligible(
-          provider.wallet_address,
-          BigInt(Math.floor((task.min_stake ?? 0) * 1e18))
-        );
-        if (!eligible) return conflict("Provider no longer meets stake requirement");
-      }
     }
 
     // Auto-transition ACCEPTED → IN_PROGRESS

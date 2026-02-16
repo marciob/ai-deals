@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {StakeRegistry} from "./StakeRegistry.sol";
 
 contract TaskEscrow is Ownable, ReentrancyGuard {
     enum EscrowStatus { Open, Released, Refunded }
@@ -16,14 +15,12 @@ contract TaskEscrow is Ownable, ReentrancyGuard {
         uint256 createdAt;
         bytes32 taskHash;
         bytes32 proofHash;
-        uint256 minStake;
     }
 
-    StakeRegistry public immutable stakeRegistry;
     mapping(bytes32 => Escrow) public escrows;
     uint256 public timeoutSeconds;
 
-    event EscrowCreated(bytes32 indexed taskId, address indexed requester, uint256 amount, bytes32 taskHash, uint256 minStake);
+    event EscrowCreated(bytes32 indexed taskId, address indexed requester, uint256 amount, bytes32 taskHash);
     event EscrowReleased(bytes32 indexed taskId, address indexed provider, uint256 amount, bytes32 proofHash);
     event EscrowRefunded(bytes32 indexed taskId, address indexed requester, uint256 amount);
 
@@ -31,17 +28,15 @@ contract TaskEscrow is Ownable, ReentrancyGuard {
     error EscrowAlreadyExists();
     error EscrowNotFound();
     error EscrowAlreadySettled();
-    error ProviderNotEligible();
     error TimeoutNotReached();
     error Unauthorized();
     error TransferFailed();
 
-    constructor(address _stakeRegistry, uint256 _timeoutSeconds) Ownable(msg.sender) {
-        stakeRegistry = StakeRegistry(_stakeRegistry);
+    constructor(uint256 _timeoutSeconds) Ownable(msg.sender) {
         timeoutSeconds = _timeoutSeconds;
     }
 
-    function createEscrow(bytes32 taskId, bytes32 taskHash, uint256 minStake) external payable {
+    function createEscrow(bytes32 taskId, bytes32 taskHash) external payable {
         if (msg.value == 0) revert ZeroAmount();
         if (escrows[taskId].amount != 0) revert EscrowAlreadyExists();
 
@@ -52,18 +47,16 @@ contract TaskEscrow is Ownable, ReentrancyGuard {
             status: EscrowStatus.Open,
             createdAt: block.timestamp,
             taskHash: taskHash,
-            proofHash: bytes32(0),
-            minStake: minStake
+            proofHash: bytes32(0)
         });
 
-        emit EscrowCreated(taskId, msg.sender, msg.value, taskHash, minStake);
+        emit EscrowCreated(taskId, msg.sender, msg.value, taskHash);
     }
 
     function release(bytes32 taskId, address provider, bytes32 proofHash) external onlyOwner nonReentrant {
         Escrow storage e = escrows[taskId];
         if (e.amount == 0) revert EscrowNotFound();
         if (e.status != EscrowStatus.Open) revert EscrowAlreadySettled();
-        if (!stakeRegistry.isEligible(provider, e.minStake)) revert ProviderNotEligible();
 
         e.provider = provider;
         e.proofHash = proofHash;
