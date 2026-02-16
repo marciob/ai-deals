@@ -49,7 +49,7 @@ export function apiProviderToProvider(p: ApiProvider): Provider {
     aiInstructions: p.ai_instructions ?? "",
     capabilities: p.capability_ids,
     price: p.price,
-    currency: "USDC",
+    currency: "MON",
     etaMinutes: p.eta_minutes,
     rating: p.rating,
     stakeAmount: p.stake_amount,

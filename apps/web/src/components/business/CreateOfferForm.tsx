@@ -303,7 +303,7 @@ export function CreateOfferForm({ onCreated }: CreateOfferFormProps) {
                   className="w-full bg-transparent px-2.5 py-1.5 text-sm font-medium text-text-primary outline-none font-mono"
                 />
                 <span className="border-l border-border px-2.5 py-1.5 text-xs text-text-muted font-medium">
-                  USDC
+                  MON
                 </span>
               </div>
             </div>

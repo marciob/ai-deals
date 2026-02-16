@@ -3,7 +3,7 @@ export function truncateAddress(address: string, chars = 4): string {
   return `${address.slice(0, chars + 2)}...${address.slice(-chars)}`;
 }
 
-export function formatCurrency(amount: number, currency = "USDC"): string {
+export function formatCurrency(amount: number, currency = "MON"): string {
   return `${amount.toFixed(2)} ${currency}`;
 }
 

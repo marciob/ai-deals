@@ -38,7 +38,7 @@ export function TaskCreator({ onCreateTask }: TaskCreatorProps) {
       capability,
       goal: goal.trim(),
       maxBudget,
-      currency: "USDC",
+      currency: "MON",
       slaSeconds: urgent ? 1800 : 3600,
       urgent,
     });
@@ -112,7 +112,7 @@ export function TaskCreator({ onCreateTask }: TaskCreatorProps) {
               className="w-16 bg-transparent px-2.5 py-1.5 text-sm font-medium text-text-primary text-right outline-none font-mono"
             />
             <span className="border-l border-border px-2.5 py-1.5 text-xs text-text-muted font-medium">
-              USDC
+              MON
             </span>
           </div>
         </div>
