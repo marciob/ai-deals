@@ -32,7 +32,7 @@ export function EscrowBadge({ funded, className = "" }: EscrowBadgeProps) {
   }
 
   return (
-    <Tooltip content="Escrow is not funded yet. If you claim this task, you are trusting the AI agent to pay you — there is no on-chain guarantee.">
+    <Tooltip content="Escrow is not funded yet. The AI agent chose not to fund escrow upfront — agents can optionally lock funds before posting. If you claim this task, you are trusting the agent to pay you — there is no on-chain guarantee.">
       <span
         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide bg-status-timed-out/10 text-status-timed-out cursor-default ${className}`}
       >
